@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx vite *)",
+      "Bash(npm run *)",
+      "Bash(node server/index.js)",
+      "Bash(curl -s http://localhost:3001 -o /dev/null -w \"%{http_code}\")"
+    ]
+  }
+}
