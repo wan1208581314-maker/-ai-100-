@@ -11,6 +11,9 @@ CONFIG_FILE = os.path.join(os.path.dirname(__file__), "pet-config.json")
 FRAME_W, FRAME_H = 192, 208
 FRAME_INTERVAL = 120  # ms
 
+DEFAULT_SCALE = 0.8
+DEFAULT_ALPHA = 1.0
+
 STATES = {
     "idle":                  {"row": 0,  "frames": 6, "loop": True},
     "running-right":         {"row": 1,  "frames": 8, "loop": True},
@@ -69,15 +72,6 @@ class DesktopPet:
         self.sheet_full = Image.open(SPRITESHEET).convert("RGBA")
         self.frames_cache = {}  # (state, frame_idx) -> PhotoImage
 
-        # Pre-cache all frames
-        for state_name, state_info in STATES.items():
-            row = state_info["row"]
-            for fi in range(state_info["frames"]):
-                x = fi * FRAME_W
-                y = row * FRAME_H
-                crop = self.sheet_full.crop((x, y, x + FRAME_W, y + FRAME_H))
-                self.frames_cache[(state_name, fi)] = ImageTk.PhotoImage(crop)
-
         # Canvas
         self.canvas = tk.Canvas(
             self.root, width=FRAME_W, height=FRAME_H,
@@ -102,15 +96,31 @@ class DesktopPet:
         self._corner_x = 0
         self._corner_y = 0
 
-        # Position window
+        # Scale and alpha
         cfg = load_config()
+        self._scale = cfg.get("scale", DEFAULT_SCALE)
+        self._alpha = cfg.get("alpha", DEFAULT_ALPHA)
+        self.root.attributes("-alpha", self._alpha)
+
+        # Effective frame size after scaling
+        self._eff_w = int(FRAME_W * self._scale)
+        self._eff_h = int(FRAME_H * self._scale)
+
+        # Rebuild frames at current scale
+        self._rebuild_frames()
+
+        # Resize canvas
+        self.canvas.config(width=self._eff_w, height=self._eff_h)
+        self.root.geometry(f"{self._eff_w}x{self._eff_h}")
+
+        # Position window
         if "x" in cfg and "y" in cfg:
             self.root.geometry(f"+{cfg['x']}+{cfg['y']}")
         else:
             self.root.update_idletasks()
             sw = self.root.winfo_screenwidth()
             sh = self.root.winfo_screenheight()
-            self.root.geometry(f"+{sw - FRAME_W - 40}+{sh - FRAME_H - 40}")
+            self.root.geometry(f"+{sw - self._eff_w - 40}+{sh - self._eff_h - 40}")
 
         # Bindings
         self.canvas.bind("<Button-1>", self._on_click)
@@ -129,6 +139,21 @@ class DesktopPet:
         self.root.protocol("WM_DELETE_WINDOW", self._on_close)
 
     # ─── Animation ───────────────────────────────────────────────────
+    def _rebuild_frames(self):
+        """Rebuild all frames at current scale."""
+        self.frames_cache.clear()
+        for state_name, state_info in STATES.items():
+            row = state_info["row"]
+            for fi in range(state_info["frames"]):
+                x = fi * FRAME_W
+                y = row * FRAME_H
+                crop = self.sheet_full.crop((x, y, x + FRAME_W, y + FRAME_H))
+                if self._scale != 1.0:
+                    crop = crop.resize(
+                        (self._eff_w, self._eff_h), Image.Resampling.LANCZOS
+                    )
+                self.frames_cache[(state_name, fi)] = ImageTk.PhotoImage(crop)
+
     def _update_sprite(self):
         key = (self.current_state, self.current_frame)
         img = self.frames_cache.get(key)
@@ -197,8 +222,8 @@ class DesktopPet:
         # Run to screen center
         sw = self.root.winfo_screenwidth()
         sh = self.root.winfo_screenheight()
-        cx = (sw - FRAME_W) // 2
-        cy = (sh - FRAME_H) // 2
+        cx = (sw - self._eff_w) // 2
+        cy = (sh - self._eff_h) // 2
         self._run_to(cx, cy, "long-idle-angry-stomp")
 
     def _run_to(self, target_x, target_y, after_state):
@@ -305,6 +330,7 @@ class DesktopPet:
         menu.add_command(label="唤醒 Piko", command=lambda: self._set_state("waving"))
         menu.add_command(label="回到待机", command=lambda: self._set_state("idle"))
         menu.add_separator()
+        menu.add_command(label="调整大小/透明度", command=self._open_settings)
         menu.add_command(label="回到右下角", command=self._go_to_corner)
         menu.add_command(label="暂停/继续", command=self._toggle_pause)
         menu.add_separator()
@@ -314,10 +340,66 @@ class DesktopPet:
         finally:
             menu.grab_release()
 
+    def _open_settings(self):
+        """Open settings dialog for scale and alpha."""
+        win = tk.Toplevel(self.root)
+        win.title("Piko 设置")
+        win.geometry("300x180")
+        win.resizable(False, False)
+        win.attributes("-topmost", True)
+
+        # Scale slider
+        tk.Label(win, text="宠物大小").pack(pady=(10, 0))
+        scale_var = tk.DoubleVar(value=self._scale)
+        scale_slider = tk.Scale(
+            win, from_=0.3, to=2.0, resolution=0.1,
+            orient=tk.HORIZONTAL, variable=scale_var, length=250
+        )
+        scale_slider.pack()
+
+        # Alpha slider
+        tk.Label(win, text="透明度").pack(pady=(5, 0))
+        alpha_var = tk.DoubleVar(value=self._alpha)
+        alpha_slider = tk.Scale(
+            win, from_=0.2, to=1.0, resolution=0.05,
+            orient=tk.HORIZONTAL, variable=alpha_var, length=250
+        )
+        alpha_slider.pack()
+
+        def apply_settings():
+            new_scale = scale_var.get()
+            new_alpha = alpha_var.get()
+            changed = False
+
+            if abs(new_scale - self._scale) > 0.01:
+                self._scale = new_scale
+                self._eff_w = int(FRAME_W * self._scale)
+                self._eff_h = int(FRAME_H * self._scale)
+                self._rebuild_frames()
+                self.canvas.config(width=self._eff_w, height=self._eff_h)
+                self.root.geometry(f"{self._eff_w}x{self._eff_h}")
+                self._update_sprite()
+                changed = True
+
+            if abs(new_alpha - self._alpha) > 0.01:
+                self._alpha = new_alpha
+                self.root.attributes("-alpha", self._alpha)
+                changed = True
+
+            if changed:
+                cfg = load_config()
+                cfg["scale"] = self._scale
+                cfg["alpha"] = self._alpha
+                save_config(cfg)
+
+            win.destroy()
+
+        tk.Button(win, text="应用", command=apply_settings, width=10).pack(pady=10)
+
     def _go_to_corner(self):
         sw = self.root.winfo_screenwidth()
         sh = self.root.winfo_screenheight()
-        self.root.geometry(f"+{sw - FRAME_W - 40}+{sh - FRAME_H - 40}")
+        self.root.geometry(f"+{sw - self._eff_w - 40}+{sh - self._eff_h - 40}")
         self._save_position()
 
     def _toggle_pause(self):
