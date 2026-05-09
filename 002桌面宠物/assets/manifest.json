@@ -1,0 +1,128 @@
+{
+  "name": "Piko 11-action desktop package",
+  "target": "Independent desktop pet apps",
+  "codexCompatible": false,
+  "reasonNotCodexCompatible": "Codex custom pets currently use the fixed 9-row atlas. This 11-row atlas is for custom desktop app logic.",
+  "spritesheet": "spritesheet-11.webp",
+  "spritesheetSize": [
+    1536,
+    2288
+  ],
+  "cellSize": [
+    192,
+    208
+  ],
+  "columns": 8,
+  "rows": [
+    {
+      "row": 0,
+      "state": "idle",
+      "frames": 6,
+      "cellSize": [
+        192,
+        208
+      ],
+      "description": "Default idle state."
+    },
+    {
+      "row": 1,
+      "state": "running-right",
+      "frames": 8,
+      "cellSize": [
+        192,
+        208
+      ],
+      "description": "Directional movement to the right."
+    },
+    {
+      "row": 2,
+      "state": "running-left",
+      "frames": 8,
+      "cellSize": [
+        192,
+        208
+      ],
+      "description": "Directional movement to the left."
+    },
+    {
+      "row": 3,
+      "state": "waving",
+      "frames": 4,
+      "cellSize": [
+        192,
+        208
+      ],
+      "description": "Greeting or manual interaction animation."
+    },
+    {
+      "row": 4,
+      "state": "jumping",
+      "frames": 5,
+      "cellSize": [
+        192,
+        208
+      ],
+      "description": "Hover or cheerful bounce animation."
+    },
+    {
+      "row": 5,
+      "state": "failed",
+      "frames": 8,
+      "cellSize": [
+        192,
+        208
+      ],
+      "description": "Failure, blocked, or error state."
+    },
+    {
+      "row": 6,
+      "state": "waiting",
+      "frames": 6,
+      "cellSize": [
+        192,
+        208
+      ],
+      "description": "Waiting for user input or confirmation."
+    },
+    {
+      "row": 7,
+      "state": "running",
+      "frames": 6,
+      "cellSize": [
+        192,
+        208
+      ],
+      "description": "Task is running or Codex is working."
+    },
+    {
+      "row": 8,
+      "state": "review",
+      "frames": 6,
+      "cellSize": [
+        192,
+        208
+      ],
+      "description": "Completed output is ready to review."
+    },
+    {
+      "row": 9,
+      "state": "long-idle-angry-stomp",
+      "frames": 8,
+      "cellSize": [
+        192,
+        208
+      ],
+      "description": "Long idle reaction: runs to center in app logic, then stomps angrily with a white anger symbol."
+    },
+    {
+      "row": 10,
+      "state": "pet-shy-heart",
+      "frames": 8,
+      "cellSize": [
+        192,
+        208
+      ],
+      "description": "Touch reaction: heart eyes, shy lowered head, blush. App logic can then reuse running-left/right to return to a corner."
+    }
+  ]
+}

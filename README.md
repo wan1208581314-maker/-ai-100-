@@ -9,6 +9,7 @@
 | 编号 | 名称 | 简介 | 技术栈 | 状态 |
 |------|------|------|--------|------|
 | 001 | 创意发散器 | AI 联想词图谱 + 创意方案生成 | Vite + 原生JS + Express + DeepSeek API | v2.2 |
+| 002 | 桌面宠物 | 透明悬浮窗可交互桌面宠物，11种动作 | Python + tkinter + Pillow | v1.0 |
 
 ---
 
@@ -54,6 +55,44 @@ npm run dev      # 前端 localhost:5173
 ```
 
 **版本历史：** 详见 [001创意发散器/项目日志.md](001创意发散器/项目日志.md)
+
+---
+
+## 002 桌面宠物
+
+一个可交互的 Windows 桌面宠物程序。角色 Piko 以透明悬浮窗的形式出现在桌面上，支持 11 种动作、鼠标交互、拖拽移动、长时间未互动生气等功能。
+
+**核心功能：**
+- 透明悬浮窗，始终置顶，不在任务栏显示
+- 11 种动作状态（idle、running、waving、jumping、failed、waiting、review、long-idle-angry-stomp、pet-shy-heart 等）
+- 鼠标悬停跳跃、单击挥手、双击害羞、拖拽移动
+- 30 分钟无互动自动跑到屏幕中央生气跺脚
+- 点击生气中的宠物 → 害羞 → 跑回原位
+- 自动适配任意屏幕分辨率
+- 窗口位置自动保存/恢复
+
+**启动方式：**
+```bash
+cd 002桌面宠物
+pip install Pillow
+python pet.py
+```
+
+**项目结构：**
+```
+002桌面宠物/
+├── pet.py                  # 主程序
+├── assets/
+│   ├── spritesheet-11.webp # 11动作序列帧素材
+│   └── manifest.json       # 动作清单
+├── 桌面宠物制作文档.md       # 完整制作指南（可发给AI复现）
+├── test_all_states.py      # 动作测试
+├── test_long_idle.py       # 生气流程测试
+├── CHANGELOG.md            # 版本日志
+└── README.md               # 项目说明
+```
+
+**版本历史：** 详见 [002桌面宠物/CHANGELOG.md](002桌面宠物/CHANGELOG.md)
 
 ---
 
