@@ -1,0 +1,30 @@
+{
+    "permissions":  {
+                        "defaultMode":  "bypassPermissions",
+                        "allow":  [
+                                      "Bash(*)",
+                                      "Read(*)",
+                                      "Edit(*)",
+                                      "Write(*)",
+                                      "MultiEdit(*)",
+                                      "Glob(*)",
+                                      "Grep(*)",
+                                      "LS(*)",
+                                      "NotebookRead(*)",
+                                      "NotebookEdit(*)",
+                                      "WebFetch(*)",
+                                      "WebSearch(*)"
+                                  ],
+                        "deny":  [
+
+                                 ],
+                        "ask":  [
+
+                                ],
+                        "additionalDirectories":  [
+                                                      "C:\\Users\\DCKJ",
+                                                      "D:\\"
+                                                  ]
+                    },
+    "skipDangerousModePermissionPrompt":  true
+}
