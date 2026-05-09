@@ -1,18 +1,28 @@
 import tkinter as tk
 from PIL import Image, ImageTk
+import pystray
 import os
 import json
 import ctypes
+import winreg
+import sys
+import threading
 
 # ─── Config ──────────────────────────────────────────────────────────
-SPRITESHEET = os.path.join(os.path.dirname(__file__), "assets", "spritesheet-11.webp")
-CONFIG_FILE = os.path.join(os.path.dirname(__file__), "pet-config.json")
+BASE_DIR = os.path.dirname(os.path.abspath(sys.argv[0]))
+SPRITESHEET = os.path.join(BASE_DIR, "assets", "spritesheet-11.webp")
+CONFIG_FILE = os.path.join(BASE_DIR, "pet-config.json")
+ICO_FILE = os.path.join(BASE_DIR, "piko.ico")
+TRAY_PNG = os.path.join(BASE_DIR, "piko-tray.png")
 
 FRAME_W, FRAME_H = 192, 208
 FRAME_INTERVAL = 120  # ms
 
 DEFAULT_SCALE = 0.8
 DEFAULT_ALPHA = 1.0
+
+APP_NAME = "PikoDesktopPet"
+REG_KEY = r"Software\Microsoft\Windows\CurrentVersion\Run"
 
 STATES = {
     "idle":                  {"row": 0,  "frames": 6, "loop": True},
@@ -48,29 +58,63 @@ def save_config(cfg):
         pass
 
 
+def is_autostart_enabled():
+    try:
+        key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, REG_KEY, 0, winreg.KEY_READ)
+        winreg.QueryValueEx(key, APP_NAME)
+        winreg.CloseKey(key)
+        return True
+    except FileNotFoundError:
+        return False
+
+
+def set_autostart(enable):
+    try:
+        key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, REG_KEY, 0, winreg.KEY_SET_VALUE)
+        if enable:
+            exe_path = sys.executable.replace("python.exe", "pythonw.exe")
+            script_path = os.path.abspath(sys.argv[0])
+            winreg.SetValueEx(key, APP_NAME, 0, winreg.REG_SZ, f'"{exe_path}" "{script_path}"')
+        else:
+            try:
+                winreg.DeleteValue(key, APP_NAME)
+            except FileNotFoundError:
+                pass
+        winreg.CloseKey(key)
+    except Exception:
+        pass
+
+
 # ─── Main Pet Class ──────────────────────────────────────────────────
 class DesktopPet:
     def __init__(self):
         self.root = tk.Tk()
         self.root.title("Piko")
-        self.root.overrideredirect(True)          # no title bar
-        self.root.attributes("-topmost", True)    # always on top
-        self.root.attributes("-transparentcolor", "#010101")  # transparent bg
+        self.root.overrideredirect(True)
+        self.root.attributes("-topmost", True)
+        self.root.attributes("-transparentcolor", "#010101")
         self.root.config(bg="#010101")
         self.root.resizable(False, False)
 
-        # Windows-specific: skip taskbar
+        # Windows: skip taskbar
         try:
             hwnd = ctypes.windll.user32.GetParent(self.root.winfo_id())
-            style = ctypes.windll.user32.GetWindowLongW(hwnd, -20)  # GWL_EXSTYLE
-            style |= 0x00000080  # WS_EX_TOOLWINDOW (hide from taskbar)
+            style = ctypes.windll.user32.GetWindowLongW(hwnd, -20)
+            style |= 0x00000080  # WS_EX_TOOLWINDOW
             ctypes.windll.user32.SetWindowLongW(hwnd, -20, style)
         except Exception:
             pass
 
+        # Window icon
+        if os.path.exists(ICO_FILE):
+            try:
+                self.root.iconbitmap(ICO_FILE)
+            except Exception:
+                pass
+
         # Load spritesheet
         self.sheet_full = Image.open(SPRITESHEET).convert("RGBA")
-        self.frames_cache = {}  # (state, frame_idx) -> PhotoImage
+        self.frames_cache = {}
 
         # Canvas
         self.canvas = tk.Canvas(
@@ -91,7 +135,7 @@ class DesktopPet:
         self._drag_data = {"x": 0, "y": 0, "dragging": False}
         self._double_clicked = False
 
-        # Angry state tracking
+        # Angry state
         self._angry = False
         self._corner_x = 0
         self._corner_y = 0
@@ -102,18 +146,14 @@ class DesktopPet:
         self._alpha = cfg.get("alpha", DEFAULT_ALPHA)
         self.root.attributes("-alpha", self._alpha)
 
-        # Effective frame size after scaling
         self._eff_w = int(FRAME_W * self._scale)
         self._eff_h = int(FRAME_H * self._scale)
 
-        # Rebuild frames at current scale
         self._rebuild_frames()
-
-        # Resize canvas
         self.canvas.config(width=self._eff_w, height=self._eff_h)
         self.root.geometry(f"{self._eff_w}x{self._eff_h}")
 
-        # Position window
+        # Position
         if "x" in cfg and "y" in cfg:
             self.root.geometry(f"+{cfg['x']}+{cfg['y']}")
         else:
@@ -135,12 +175,69 @@ class DesktopPet:
         self._start_anim()
         self._reset_idle_timer()
 
-        # Save position on close
-        self.root.protocol("WM_DELETE_WINDOW", self._on_close)
+        # Close → minimize to tray
+        self.root.protocol("WM_DELETE_WINDOW", self._minimize_to_tray)
+
+        # System tray
+        self._tray_icon = None
+        self._setup_tray()
+
+    # ─── System Tray ─────────────────────────────────────────────────
+    def _setup_tray(self):
+        if os.path.exists(TRAY_PNG):
+            tray_image = Image.open(TRAY_PNG)
+        else:
+            tray_image = self.sheet_full.crop((0, 0, 192, 208)).resize((64, 64))
+
+        menu = pystray.Menu(
+            pystray.MenuItem("显示 Piko", self._tray_show, default=True),
+            pystray.Menu.SEPARATOR,
+            pystray.MenuItem("唤醒", lambda: self.root.after(0, lambda: self._set_state("waving"))),
+            pystray.MenuItem("回到待机", lambda: self.root.after(0, lambda: self._set_state("idle"))),
+            pystray.Menu.SEPARATOR,
+            pystray.MenuItem(
+                "开机自启",
+                self._tray_toggle_autostart,
+                checked=lambda item: is_autostart_enabled()
+            ),
+            pystray.MenuItem("退出 Piko", self._tray_quit),
+        )
+        self._tray_icon = pystray.Icon("Piko", tray_image, "Piko 桌面宠物", menu)
+
+    def _tray_show(self, icon=None, item=None):
+        self.root.after(0, self._restore_from_tray)
+
+    def _tray_toggle_autostart(self, icon=None, item=None):
+        current = is_autostart_enabled()
+        set_autostart(not current)
+
+    def _tray_quit(self, icon=None, item=None):
+        self.root.after(0, self._real_quit)
+
+    def _minimize_to_tray(self):
+        """Hide window and show tray icon."""
+        self._save_position()
+        self.root.withdraw()
+        if self._tray_icon:
+            threading.Thread(target=self._tray_icon.run, daemon=True).start()
+
+    def _restore_from_tray(self):
+        """Show window and stop tray icon."""
+        if self._tray_icon:
+            self._tray_icon.stop()
+        self.root.deiconify()
+        self.root.attributes("-topmost", True)
+        self._set_state("waving")
+
+    def _real_quit(self):
+        """Actually quit the app."""
+        self._save_position()
+        if self._tray_icon:
+            self._tray_icon.stop()
+        self.root.destroy()
 
     # ─── Animation ───────────────────────────────────────────────────
     def _rebuild_frames(self):
-        """Rebuild all frames at current scale."""
         self.frames_cache.clear()
         for state_name, state_info in STATES.items():
             row = state_info["row"]
@@ -169,7 +266,6 @@ class DesktopPet:
             if state_info["loop"]:
                 self.current_frame = 0
             else:
-                # shy-heart finished → run back to corner
                 if self.current_state == "pet-shy-heart" and self._angry:
                     self._angry = False
                     self._return_to_corner()
@@ -197,7 +293,6 @@ class DesktopPet:
     def _set_state(self, new_state):
         if new_state not in STATES:
             return
-        # Allow re-entering non-loop states (so clicking works repeatedly)
         if new_state == self.current_state and STATES[new_state]["loop"]:
             return
         self.current_state = new_state
@@ -215,11 +310,9 @@ class DesktopPet:
     def _trigger_long_idle(self):
         if self.current_state != "idle":
             return
-        # Save current position as corner to return to later
         self._corner_x = self.root.winfo_x()
         self._corner_y = self.root.winfo_y()
         self._angry = True
-        # Run to screen center
         sw = self.root.winfo_screenwidth()
         sh = self.root.winfo_screenheight()
         cx = (sw - self._eff_w) // 2
@@ -252,7 +345,6 @@ class DesktopPet:
         move_step()
 
     def _return_to_corner(self):
-        """Run back to the saved corner position, then go idle."""
         cur_x = self.root.winfo_x()
         cur_y = self.root.winfo_y()
         dx = self._corner_x - cur_x
@@ -307,7 +399,6 @@ class DesktopPet:
             self._set_state("idle")
             self._save_position()
         elif self._angry:
-            # Clicked while angry → shy heart, then return to corner
             self._set_state("pet-shy-heart")
         elif not self._double_clicked:
             self._set_state("waving")
@@ -334,21 +425,28 @@ class DesktopPet:
         menu.add_command(label="回到右下角", command=self._go_to_corner)
         menu.add_command(label="暂停/继续", command=self._toggle_pause)
         menu.add_separator()
-        menu.add_command(label="退出", command=self._on_close)
+        # 开机自启
+        self._autostart_var = tk.BooleanVar(value=is_autostart_enabled())
+        menu.add_checkbutton(label="开机自启", variable=self._autostart_var,
+                             command=self._toggle_autostart)
+        menu.add_separator()
+        menu.add_command(label="最小化到托盘", command=self._minimize_to_tray)
+        menu.add_command(label="退出", command=self._real_quit)
         try:
             menu.tk_popup(event.x_root, event.y_root)
         finally:
             menu.grab_release()
 
+    def _toggle_autostart(self):
+        set_autostart(self._autostart_var.get())
+
     def _open_settings(self):
-        """Open settings dialog for scale and alpha."""
         win = tk.Toplevel(self.root)
         win.title("Piko 设置")
         win.geometry("300x180")
         win.resizable(False, False)
         win.attributes("-topmost", True)
 
-        # Scale slider
         tk.Label(win, text="宠物大小").pack(pady=(10, 0))
         scale_var = tk.DoubleVar(value=self._scale)
         scale_slider = tk.Scale(
@@ -357,7 +455,6 @@ class DesktopPet:
         )
         scale_slider.pack()
 
-        # Alpha slider
         tk.Label(win, text="透明度").pack(pady=(5, 0))
         alpha_var = tk.DoubleVar(value=self._alpha)
         alpha_slider = tk.Scale(
@@ -412,11 +509,10 @@ class DesktopPet:
     def _save_position(self):
         x = self.root.winfo_x()
         y = self.root.winfo_y()
-        save_config({"x": x, "y": y})
-
-    def _on_close(self):
-        self._save_position()
-        self.root.destroy()
+        cfg = load_config()
+        cfg["x"] = x
+        cfg["y"] = y
+        save_config(cfg)
 
     def run(self):
         self.root.mainloop()
