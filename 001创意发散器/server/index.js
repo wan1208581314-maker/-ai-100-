@@ -35,7 +35,7 @@ async function callDeepSeek(messages, temperature = 1.0) {
 // 词语联想接口
 app.post('/api/associate', async (req, res) => {
   try {
-    const { word, existing = [] } = req.body
+    const { word, existing = [], temperature = 0.7 } = req.body
     const avoidList = existing.length > 0 ? `\n5. 请务必避免返回以下已出现的词语：${existing.join('、')}` : ''
     const prompt = `用户输入了"${word}"，请围绕它联想8个词。
 
@@ -62,7 +62,7 @@ app.post('/api/associate', async (req, res) => {
     const content = await callDeepSeek([
       { role: 'system', content: '你是一个创意联想助手，擅长从一个词出发，沿着具体的方向（工具、场景、人物、风格、趋势等）找到生动且强相关的联想词。你的联想让人感觉"妙啊，确实是这样"，而不是"这有什么关系？"。你只返回JSON数组，不返回其他内容。' },
       { role: 'user', content: prompt },
-    ], 0.7)
+    ], temperature)
 
     // 提取 JSON 数组（兼容 DeepSeek 可能返回的 markdown 包裹或额外文字）
     const start = content.indexOf('[')

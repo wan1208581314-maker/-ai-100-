@@ -74,8 +74,8 @@ app.appendChild(controls)
 // ── 版本号 ──
 const versionTag = document.createElement('div')
 versionTag.className = 'version-tag'
-versionTag.textContent = 'v2.2'
-versionTag.title = '创意发散 v2.2 — 详见项目日志.md'
+versionTag.textContent = 'v2.3'
+versionTag.title = '创意发散 v2.3 — 详见项目日志.md'
 app.appendChild(versionTag)
 
 const zoomIndicator = controls.querySelector('.zoom-indicator')
@@ -118,7 +118,7 @@ const inputApi = initInput(async (word) => {
   const root = addRootNode({ zh: word, en: '...' })
 
   try {
-    const words = await fetchAssociations(word)
+    const words = await fetchAssociations(word, [], inputApi.getTemperature())
     const match = words.find(w => w.zh === word)
     if (match) {
       const el = graphLayer.querySelector(`[data-id="${root.id}"] .en`)
@@ -147,7 +147,7 @@ setHistoryRestoreCallback(async (word, graphData) => {
     clearGraph()
     const root = addRootNode({ zh: word, en: '...' })
     try {
-      const words = await fetchAssociations(word)
+      const words = await fetchAssociations(word, [], inputApi.getTemperature())
       const match = words.find(w => w.zh === word)
       if (match) {
         const el = graphLayer.querySelector(`[data-id="${root.id}"] .en`)

@@ -87,7 +87,6 @@ function startSpring(draggedId) {
     el.style.animation = 'none'
     el.classList.add('spring-active')
 
-    // 层级深度
     let depth = 0
     let cur = child
     while (cur.parentId && cur.parentId !== draggedId) {
@@ -108,18 +107,18 @@ function startSpring(draggedId) {
       baseY: child.y,
       el,
       depth,
-      // 跟随速度（0.08~0.16，越远略慢但不会太迟钝）
-      lerp: 0.12 - depth * 0.02 + r1 * 0.04,
-      // 每个节点完全独立的飘动参数
+      // 每个节点独立的飘动参数
       phase1: r1 * Math.PI * 2,
       phase2: r2 * Math.PI * 2,
       phase3: r3 * Math.PI * 2,
-      freq1: 0.002 + r1 * 0.002,          // 0.002~0.004
-      freq2: 0.003 + r2 * 0.002,          // 0.003~0.005
-      freq3: 0.001 + r3 * 0.0015,         // 0.001~0.0025（第三层慢波）
-      amp1: 5 + depth * 3 + r1 * 5,       // 主飘幅 5~13
-      amp2: 3 + r2 * 4,                   // 副飘幅 3~7
-      amp3: 2 + depth * 2 + r3 * 3,       // 慢波幅 2~7
+      freq1: 0.002 + r1 * 0.002,
+      freq2: 0.003 + r2 * 0.002,
+      freq3: 0.001 + r3 * 0.0015,
+      amp1: 5 + depth * 3 + r1 * 5,
+      amp2: 3 + r2 * 4,
+      amp3: 2 + depth * 2 + r3 * 3,
+      // 柔和跟随：每个节点不同的跟随速度
+      followSpeed: 0.15 - depth * 0.03 + r1 * 0.04,  // 0.12~0.19
     }
   }).filter(Boolean)
 
@@ -144,11 +143,11 @@ function updateSpring() {
     const targetX = parent.x + sc.relX
     const targetY = parent.y + sc.relY
 
-    // lerp 跟随
-    sc.curX += (targetX - sc.curX) * sc.lerp
-    sc.curY += (targetY - sc.curY) * sc.lerp
+    // 柔和 lerp 跟随（每个节点速度不同 → 参差不齐的跟随感）
+    sc.curX += (targetX - sc.curX) * sc.followSpeed
+    sc.curY += (targetY - sc.curY) * sc.followSpeed
 
-    // 三层频率叠加的随机飘动（每个节点的频率/相位/幅度都不同）
+    // 飘动叠加
     const driftX = Math.sin(t * sc.freq1 + sc.phase1) * sc.amp1
                   + Math.sin(t * sc.freq2 + sc.phase2) * sc.amp2
                   + Math.sin(t * sc.freq3 + sc.phase3) * sc.amp3
@@ -156,10 +155,8 @@ function updateSpring() {
                   + Math.cos(t * sc.freq2 * 0.8 + sc.phase2 + 2) * sc.amp2
                   + Math.cos(t * sc.freq3 * 1.7 + sc.phase3 + 3) * sc.amp3
 
-    // 同步数据模型（线条跟随）
     node.x = sc.curX + driftX
     node.y = sc.curY + driftY
-    // 视觉 transform（包含飘动偏移）
     sc.el.style.transform = `translate(${node.x - sc.baseX}px, ${node.y - sc.baseY}px)`
   })
 

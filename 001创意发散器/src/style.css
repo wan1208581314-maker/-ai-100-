@@ -497,6 +497,71 @@ body {
   box-shadow: 0 4px 15px var(--yellow-glow);
 }
 
+/* ── 温度滑块 ── */
+.temp-control {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 10px;
+  padding: 0 4px;
+}
+
+.temp-label {
+  font-size: 11px;
+  color: var(--text-secondary);
+  user-select: none;
+}
+
+.temp-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 160px;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(0, 0, 0, 0.12);
+  outline: none;
+  cursor: pointer;
+}
+
+:root[data-theme="dark"] .temp-slider {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.temp-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--yellow);
+  box-shadow: 0 2px 8px var(--yellow-glow);
+  cursor: pointer;
+  transition: transform 0.15s;
+}
+
+.temp-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+
+.temp-slider::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--yellow);
+  box-shadow: 0 2px 8px var(--yellow-glow);
+  cursor: pointer;
+  border: none;
+}
+
+.temp-value {
+  font-size: 11px;
+  color: var(--text-secondary);
+  min-width: 24px;
+  text-align: center;
+  font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
+}
+
 /* ── 主题切换按钮 ── */
 .theme-toggle {
   position: fixed;
