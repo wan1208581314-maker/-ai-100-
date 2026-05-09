@@ -80,6 +80,7 @@ body {
   left: 0;
   top: 0;
   pointer-events: none;
+  overflow: visible;
 }
 
 .connections-layer path {
@@ -289,15 +290,19 @@ body {
   66% { transform: translate(-3px, -5px); }
 }
 
-.node.floating-1:not(.entering):not(.dragging) { animation: float1 6s ease-in-out infinite; }
-.node.floating-2:not(.entering):not(.dragging) { animation: float2 8s ease-in-out infinite; }
-.node.floating-3:not(.entering):not(.dragging) { animation: float3 7s ease-in-out infinite; }
+.node.floating-1:not(.entering):not(.dragging):not(.spring-active) { animation: float1 6s ease-in-out infinite; }
+.node.floating-2:not(.entering):not(.dragging):not(.spring-active) { animation: float2 8s ease-in-out infinite; }
+.node.floating-3:not(.entering):not(.dragging):not(.spring-active) { animation: float3 7s ease-in-out infinite; }
 
 .node.dragging {
   animation: none !important;
   cursor: grabbing;
   z-index: 100;
   box-shadow: 0 10px 40px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.6);
+}
+
+.node.spring-active {
+  animation: none !important;
 }
 
 :root[data-theme="dark"] .node.dragging {
@@ -365,7 +370,17 @@ body {
   align-items: center;
   justify-content: center;
   box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-  pointer-events: none;
+  cursor: pointer;
+  transition: transform 0.15s;
+}
+
+.node-badge:hover {
+  transform: scale(1.2);
+}
+
+.node-badge.collapsed {
+  background: #999;
+  color: #fff;
 }
 
 /* ── 加载动画 ── */
@@ -517,6 +532,24 @@ body {
 
 :root[data-theme="dark"] .theme-toggle:hover {
   background: rgba(60, 60, 60, 0.8);
+}
+
+/* ── 版本号 ── */
+.version-tag {
+  position: fixed;
+  bottom: 8px;
+  left: 8px;
+  z-index: 999;
+  font-size: 11px;
+  color: rgba(0, 0, 0, 0.2);
+  font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
+  letter-spacing: 0.5px;
+  pointer-events: none;
+  user-select: none;
+}
+
+:root[data-theme="dark"] .version-tag {
+  color: rgba(255, 255, 255, 0.15);
 }
 
 /* ── 画布控件 ── */

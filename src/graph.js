@@ -30,8 +30,12 @@ let dragOffsetX = 0
 let dragOffsetY = 0
 let dragMoved = false
 
+// 弹簧物理状态
+let springChildren = null // { parentId, children: [{id, relX, relY, curX, curY, el}] }
+
 // 回调
 let onSelectionChange = null
+let onGraphChange = null
 
 // 确认按钮状态
 let confirmTarget = null
@@ -48,34 +52,223 @@ function applyTransform() {
   transformContainer.style.transformOrigin = '0 0'
 }
 
-export function initGraph(graphEl, svgEl, transformEl, onSelChange) {
+function getAllDescendants(parentId) {
+  const result = []
+  const stack = [parentId]
+  while (stack.length > 0) {
+    const pid = stack.pop()
+    edges.forEach(e => {
+      if (e.from === pid) {
+        const child = nodes.find(n => n.id === e.to)
+        if (child) {
+          result.push(child)
+          stack.push(child.id)
+        }
+      }
+    })
+  }
+  return result
+}
+
+// ── 弹簧物理（直接移动，不依赖 requestAnimationFrame） ──
+
+function startSpring(draggedId) {
+  clearSpring()
+
+  const parent = nodes.find(n => n.id === draggedId)
+  if (!parent) return
+
+  const descendants = getAllDescendants(draggedId)
+  if (descendants.length === 0) return
+
+  const children = descendants.map((child, i) => {
+    const el = graphLayer.querySelector(`[data-id="${child.id}"]`)
+    if (!el) return null
+    el.style.animation = 'none'
+    el.classList.add('spring-active')
+
+    // 层级深度
+    let depth = 0
+    let cur = child
+    while (cur.parentId && cur.parentId !== draggedId) {
+      cur = nodes.find(n => n.id === cur.parentId) || cur
+      depth++
+    }
+
+    const r1 = Math.random()
+    const r2 = Math.random()
+    const r3 = Math.random()
+    return {
+      id: child.id,
+      relX: child.x - parent.x,
+      relY: child.y - parent.y,
+      curX: child.x,
+      curY: child.y,
+      baseX: child.x,
+      baseY: child.y,
+      el,
+      depth,
+      // 跟随速度（0.08~0.16，越远略慢但不会太迟钝）
+      lerp: 0.12 - depth * 0.02 + r1 * 0.04,
+      // 每个节点完全独立的飘动参数
+      phase1: r1 * Math.PI * 2,
+      phase2: r2 * Math.PI * 2,
+      phase3: r3 * Math.PI * 2,
+      freq1: 0.002 + r1 * 0.002,          // 0.002~0.004
+      freq2: 0.003 + r2 * 0.002,          // 0.003~0.005
+      freq3: 0.001 + r3 * 0.0015,         // 0.001~0.0025（第三层慢波）
+      amp1: 5 + depth * 3 + r1 * 5,       // 主飘幅 5~13
+      amp2: 3 + r2 * 4,                   // 副飘幅 3~7
+      amp3: 2 + depth * 2 + r3 * 3,       // 慢波幅 2~7
+    }
+  }).filter(Boolean)
+
+  if (children.length === 0) return
+
+  springChildren = { parentId: draggedId, children }
+}
+
+function updateSpring() {
+  if (!springChildren) return
+
+  const parent = nodes.find(n => n.id === springChildren.parentId)
+  if (!parent) return
+
+  const t = performance.now()
+
+  springChildren.children.forEach(sc => {
+    const node = nodes.find(n => n.id === sc.id)
+    if (!node) return
+
+    // 目标：父节点当前位置 + 初始相对偏移
+    const targetX = parent.x + sc.relX
+    const targetY = parent.y + sc.relY
+
+    // lerp 跟随
+    sc.curX += (targetX - sc.curX) * sc.lerp
+    sc.curY += (targetY - sc.curY) * sc.lerp
+
+    // 三层频率叠加的随机飘动（每个节点的频率/相位/幅度都不同）
+    const driftX = Math.sin(t * sc.freq1 + sc.phase1) * sc.amp1
+                  + Math.sin(t * sc.freq2 + sc.phase2) * sc.amp2
+                  + Math.sin(t * sc.freq3 + sc.phase3) * sc.amp3
+    const driftY = Math.cos(t * sc.freq1 * 1.3 + sc.phase1 + 1) * sc.amp1
+                  + Math.cos(t * sc.freq2 * 0.8 + sc.phase2 + 2) * sc.amp2
+                  + Math.cos(t * sc.freq3 * 1.7 + sc.phase3 + 3) * sc.amp3
+
+    // 同步数据模型（线条跟随）
+    node.x = sc.curX + driftX
+    node.y = sc.curY + driftY
+    // 视觉 transform（包含飘动偏移）
+    sc.el.style.transform = `translate(${node.x - sc.baseX}px, ${node.y - sc.baseY}px)`
+  })
+
+  renderEdges()
+}
+
+function commitSpring() {
+  if (!springChildren) return
+  springChildren.children.forEach(sc => {
+    const node = nodes.find(n => n.id === sc.id)
+    if (node) {
+      node.x = sc.curX
+      node.y = sc.curY
+    }
+    sc.el.style.transform = ''
+    sc.el.style.animation = ''
+    sc.el.classList.remove('spring-active')
+    if (node) updateNodePosition(node)
+  })
+  springChildren = null
+  if (onGraphChange) onGraphChange()
+}
+
+function clearSpring() {
+  if (springChildren) {
+    springChildren.children.forEach(sc => {
+      sc.el.style.transform = ''
+      sc.el.style.animation = ''
+      sc.el.classList.remove('spring-active')
+    })
+    springChildren = null
+  }
+}
+
+// ── 事件处理 ──
+
+function onMouseMove(e) {
+  if (isPanning) {
+    panX = panStartPanX + (e.clientX - panStartX)
+    panY = panStartPanY + (e.clientY - panStartY)
+    applyTransform()
+    return
+  }
+
+  if (!dragNode) return
+  dragMoved = true
+  const { node, el } = dragNode
+  const world = screenToWorld(e.clientX, e.clientY)
+  node.x = world.x - dragOffsetX
+  node.y = world.y - dragOffsetY
+  el.style.left = `${node.x - el.offsetWidth / 2}px`
+  el.style.top = `${node.y - el.offsetHeight / 2}px`
+
+  // 启动弹簧（首次拖拽时）
+  if (!springChildren || springChildren.parentId !== node.id) {
+    startSpring(node.id)
+  }
+  // 更新弹簧中子节点位置
+  updateSpring()
+
+  renderEdges()
+}
+
+function onMouseUp() {
+  if (isPanning) {
+    isPanning = false
+    document.body.style.cursor = ''
+    return
+  }
+  if (dragNode) {
+    // 提交弹簧中子节点的最终位置
+    commitSpring()
+    dragNode.el.classList.remove('dragging')
+    dragNode = null
+  }
+}
+
+// ── 初始化 ──
+
+export function initGraph(graphEl, svgEl, transformEl, onSelChange, onGraphUpdate) {
   graphLayer = graphEl
   svgLayer = svgEl
   transformContainer = transformEl
   onSelectionChange = onSelChange
+  onGraphChange = onGraphUpdate
 
-  // 平移：在空白区域按下鼠标
-  transformContainer.addEventListener('mousedown', (e) => {
+  // 画布事件绑定在 document，用排除法过滤 UI 控件和节点
+  document.addEventListener('mousedown', (e) => {
     if (e.button !== 0) return
-    if (e.target !== graphLayer && e.target !== svgLayer && !e.target.closest('svg.connections-layer')) return
+    if (e.target.closest('.input-area, .canvas-controls, .theme-toggle, .history-btn, .history-drawer, .generate-btn, .result-modal, .selection-badge, .overlay, .global-loading')) return
+    if (e.target.closest('.node')) return
+
     removeConfirmIcon()
     isPanning = true
     panStartX = e.clientX
     panStartY = e.clientY
     panStartPanX = panX
     panStartPanY = panY
-    transformContainer.style.cursor = 'grabbing'
+    document.body.style.cursor = 'grabbing'
     e.preventDefault()
   })
 
-  // 缩放：鼠标滚轮
-  transformContainer.addEventListener('wheel', (e) => {
+  document.addEventListener('wheel', (e) => {
+    if (e.target.closest('.input-area, .canvas-controls, .history-drawer, .result-modal, .generate-btn')) return
     e.preventDefault()
     const delta = e.deltaY > 0 ? 0.92 : 1.08
     const newZoom = Math.min(Math.max(zoom * delta, 0.2), 5)
-    const rect = transformContainer.getBoundingClientRect()
-    const mx = e.clientX - rect.left
-    const my = e.clientY - rect.top
+    const mx = e.clientX
+    const my = e.clientY
     panX = mx - (mx - panX) * (newZoom / zoom)
     panY = my - (my - panY) * (newZoom / zoom)
     zoom = newZoom
@@ -86,7 +279,6 @@ export function initGraph(graphEl, svgEl, transformEl, onSelChange) {
   document.addEventListener('mouseup', onMouseUp)
   window.addEventListener('resize', () => renderEdges())
 
-  // Ctrl+Z / Cmd+Z undo
   document.addEventListener('keydown', (e) => {
     if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
       e.preventDefault()
@@ -94,6 +286,8 @@ export function initGraph(graphEl, svgEl, transformEl, onSelChange) {
     }
   })
 }
+
+// ── 导出 API ──
 
 export function getSelectedNodes() {
   return nodes.filter(n => selectedNodes.has(n.id))
@@ -112,7 +306,6 @@ export function expandNode(parentId, words) {
   const parent = nodes.find(n => n.id === parentId)
   if (!parent) return
 
-  // Filter out duplicates
   words = words.filter(w => !nodes.some(n => n.zh === w.zh))
   if (words.length === 0) return
 
@@ -129,40 +322,33 @@ export function expandNode(parentId, words) {
 
     const node = createNodeData(word, x, y, parentId, false)
     node._angle = angle
-    node._parentX = parent.x
-    node._parentY = parent.y
     nodes.push(node)
     newNodes.push(node)
     edges.push({ from: parentId, to: node.id })
   })
 
-  // Resolve collisions so new nodes don't overlap existing ones
   resolveCollisions(newNodes)
 
   newNodes.forEach(node => {
     delete node._angle
-    delete node._parentX
-    delete node._parentY
     renderNode(node)
   })
 
-  // Push to undo stack
   undoStack.push({
     nodeIds: newNodes.map(n => n.id),
     parentId: parentId,
   })
 
   renderEdges()
+  if (onGraphChange) onGraphChange()
 }
 
 function resolveCollisions(newNodes) {
   const minDist = 130
-  const allNodes = nodes
-
   for (let iter = 0; iter < 3; iter++) {
     let moved = false
     for (const node of newNodes) {
-      for (const other of allNodes) {
+      for (const other of nodes) {
         if (other.id === node.id) continue
         const dx = node.x - other.x
         const dy = node.y - other.y
@@ -185,10 +371,7 @@ function createNodeData(word, x, y, parentId, isRoot) {
     id: ++nodeIdCounter,
     zh: word.zh,
     en: word.en,
-    x,
-    y,
-    parentId,
-    isRoot,
+    x, y, parentId, isRoot,
     collapsed: false,
     floatClass: `floating-${(Math.floor(Math.random() * 3)) + 1}`,
   }
@@ -204,27 +387,24 @@ function renderNode(node) {
     <span class="en">${node.en}</span>
   `
 
-  // 预估尺寸定位
-  const estSize = node.isRoot ? 120 : 90
-  el.style.left = `${node.x - estSize / 2}px`
-  el.style.top = `${node.y - estSize / 2}px`
+  const size = node.isRoot ? 120 : 90
+  el.style.left = `${node.x - size / 2}px`
+  el.style.top = `${node.y - size / 2}px`
+  el.style.width = `${size}px`
+  el.style.height = `${size}px`
 
-  // tooltip
   el.title = node.zh + (node.en ? ` (${node.en})` : '')
 
-  // 点击显示确认按钮
-  el.addEventListener('click', (e) => {
+  el.addEventListener('click', () => {
     if (dragMoved) return
     showConfirmIcon(node, el)
   })
 
-  // 右键选择
   el.addEventListener('contextmenu', (e) => {
     e.preventDefault()
     toggleSelection(node, el)
   })
 
-  // 拖拽（使用世界坐标偏移）
   el.addEventListener('mousedown', (e) => {
     if (e.button !== 0) return
     e.stopPropagation()
@@ -241,12 +421,6 @@ function renderNode(node) {
   el.addEventListener('animationend', () => {
     el.classList.remove('entering')
   }, { once: true })
-
-  requestAnimationFrame(() => {
-    const rect = el.getBoundingClientRect()
-    el.style.left = `${node.x - rect.width / 2}px`
-    el.style.top = `${node.y - rect.height / 2}px`
-  })
 }
 
 function renderEdges() {
@@ -287,41 +461,7 @@ function updateNodePosition(node) {
   el.style.top = `${node.y - el.offsetHeight / 2}px`
 }
 
-function onMouseMove(e) {
-  // 画布平移
-  if (isPanning) {
-    panX = panStartPanX + (e.clientX - panStartX)
-    panY = panStartPanY + (e.clientY - panStartY)
-    applyTransform()
-    return
-  }
-
-  // 节点拖拽
-  if (!dragNode) return
-  dragMoved = true
-  const { node, el } = dragNode
-  const world = screenToWorld(e.clientX, e.clientY)
-  node.x = world.x - dragOffsetX
-  node.y = world.y - dragOffsetY
-  el.style.left = `${node.x - el.offsetWidth / 2}px`
-  el.style.top = `${node.y - el.offsetHeight / 2}px`
-  renderEdges()
-}
-
-function onMouseUp() {
-  if (isPanning) {
-    isPanning = false
-    transformContainer.style.cursor = ''
-    return
-  }
-  if (dragNode) {
-    dragNode.el.classList.remove('dragging')
-    dragNode = null
-  }
-}
-
 function showConfirmIcon(node, nodeEl) {
-  // Remove existing confirm icon if clicking same node
   if (confirmTarget && confirmTarget.el === nodeEl) {
     removeConfirmIcon()
     return
@@ -341,7 +481,6 @@ function showConfirmIcon(node, nodeEl) {
   nodeEl.appendChild(icon)
   confirmTarget = { node, el: nodeEl, icon }
 
-  // Dismiss on outside click
   setTimeout(() => {
     document.addEventListener('mousedown', onDocDismissConfirm, { once: true })
   }, 0)
@@ -351,7 +490,6 @@ function onDocDismissConfirm(e) {
   if (confirmTarget && !confirmTarget.el.contains(e.target)) {
     removeConfirmIcon()
   } else if (confirmTarget) {
-    // Still listening if clicked on the node itself (handled by showConfirmIcon toggle)
     document.addEventListener('mousedown', onDocDismissConfirm, { once: true })
   }
 }
@@ -364,7 +502,6 @@ function removeConfirmIcon() {
 }
 
 async function handleNodeExpand(node, nodeEl) {
-  // 防止重复点击
   if (nodeEl.querySelector('.loader')) return
 
   const loader = document.createElement('div')
@@ -395,19 +532,32 @@ function updateNodeBadge(node) {
   if (!badge) {
     badge = document.createElement('span')
     badge.className = 'node-badge'
+    badge.addEventListener('click', (e) => {
+      e.stopPropagation()
+      toggleCollapse(node)
+    })
     el.appendChild(badge)
   }
-  badge.textContent = childCount
+  badge.textContent = node.collapsed ? childCount + ' ▸' : childCount
+  badge.classList.toggle('collapsed', node.collapsed)
 }
 
 function updateCollapseState() {
   nodes.forEach(node => {
     const el = graphLayer.querySelector(`[data-id="${node.id}"]`)
     if (!el) return
-    const hidden = isHidden(node.id)
-    el.classList.toggle('hidden', hidden)
+    el.classList.toggle('hidden', isHidden(node.id))
   })
   renderEdges()
+}
+
+function toggleCollapse(node) {
+  const childCount = edges.filter(e => e.from === node.id).length
+  if (childCount === 0) return
+  node.collapsed = !node.collapsed
+  updateCollapseState()
+  updateNodeBadge(node)
+  if (onGraphChange) onGraphChange()
 }
 
 function toggleSelection(node, el) {
@@ -420,8 +570,6 @@ function toggleSelection(node, el) {
   }
   if (onSelectionChange) onSelectionChange(getSelectedNodes())
 }
-
-// -- 画布控制 API --
 
 export function getZoom() { return zoom }
 export function getPan() { return { x: panX, y: panY } }
@@ -468,9 +616,30 @@ export function resetView() {
   applyTransform()
 }
 
-// 清空图谱
+export function exportGraphState() {
+  return {
+    nodes: nodes.map(n => ({ ...n })),
+    edges: edges.map(e => ({ ...e })),
+    nodeIdCounter,
+  }
+}
+
+export function importGraphState(state) {
+  clearGraph()
+  if (!state) return
+  nodeIdCounter = state.nodeIdCounter || 0
+  state.edges.forEach(e => edges.push({ ...e }))
+  state.nodes.forEach(n => {
+    nodes.push(n)
+    renderNode(n)
+    updateNodeBadge(n)
+  })
+  renderEdges()
+}
+
 export function clearGraph() {
   removeConfirmIcon()
+  clearSpring()
   nodes = []
   edges = []
   selectedNodes.clear()
@@ -481,16 +650,14 @@ export function clearGraph() {
   if (onSelectionChange) onSelectionChange([])
 }
 
-// 撤销上一次展开
 export function undo() {
   if (undoStack.length === 0) return
 
   const action = undoStack.pop()
+  removeConfirmIcon()
 
-  // Remove edges that connect to the removed nodes
   edges = edges.filter(e => !action.nodeIds.includes(e.to))
 
-  // Remove nodes from data and DOM
   action.nodeIds.forEach(id => {
     const idx = nodes.findIndex(n => n.id === id)
     if (idx !== -1) nodes.splice(idx, 1)
@@ -499,10 +666,14 @@ export function undo() {
     selectedNodes.delete(id)
   })
 
-  // Update badge on parent node
   const parentNode = nodes.find(n => n.id === action.parentId)
-  if (parentNode) updateNodeBadge(parentNode)
+  if (parentNode) {
+    const remaining = edges.filter(e => e.from === parentNode.id).length
+    if (remaining === 0) parentNode.collapsed = false
+    updateNodeBadge(parentNode)
+  }
 
   renderEdges()
   if (onSelectionChange) onSelectionChange(getSelectedNodes())
+  if (onGraphChange) onGraphChange()
 }

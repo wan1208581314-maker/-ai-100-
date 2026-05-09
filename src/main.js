@@ -1,7 +1,7 @@
 import './style.css'
 import { initInput } from './input.js'
-import { initGraph, addRootNode, clearGraph, getSelectedNodes, expandNode, getZoom, setZoom, fitToView, resetView } from './graph.js'
-import { initHistory, addHistory, setHistoryRestoreCallback } from './history.js'
+import { initGraph, addRootNode, clearGraph, getSelectedNodes, expandNode, getZoom, setZoom, fitToView, resetView, exportGraphState, importGraphState } from './graph.js'
+import { initHistory, addHistory, updateLatestHistory, setHistoryRestoreCallback } from './history.js'
 import { initGenerator } from './generator.js'
 import { fetchAssociations } from './api.js'
 
@@ -71,6 +71,13 @@ controls.innerHTML = `
 `
 app.appendChild(controls)
 
+// ── 版本号 ──
+const versionTag = document.createElement('div')
+versionTag.className = 'version-tag'
+versionTag.textContent = 'v2.2'
+versionTag.title = '创意发散 v2.2 — 详见项目日志.md'
+app.appendChild(versionTag)
+
 const zoomIndicator = controls.querySelector('.zoom-indicator')
 function updateZoomIndicator() {
   zoomIndicator.textContent = `${Math.round(getZoom() * 100)}%`
@@ -87,22 +94,26 @@ controls.addEventListener('click', (e) => {
     clearGraph()
     resetView()
     emptyState.classList.remove('hidden')
+    currentWord = null
   }
   updateZoomIndicator()
 })
 
 // ── 初始化图谱（传入变换容器）──
 let generatorApi = null
+let currentWord = null
 initGraph(graphLayer, svgLayer, transformContainer, (selected) => {
   if (generatorApi) generatorApi.updateSelection(selected)
+}, () => {
+  if (currentWord) updateLatestHistory(exportGraphState(), currentWord)
 })
 
 // ── 初始化输入框 ──
-initInput(async (word) => {
-  addHistory(word)
+const inputApi = initInput(async (word) => {
   clearGraph()
   resetView()
   emptyState.classList.add('hidden')
+  currentWord = word
 
   const root = addRootNode({ zh: word, en: '...' })
 
@@ -116,6 +127,7 @@ initInput(async (word) => {
     }
     expandNode(root.id, words)
     updateZoomIndicator()
+    addHistory(word, exportGraphState())
   } catch (err) {
     console.error('联想失败:', err)
   }
@@ -123,24 +135,29 @@ initInput(async (word) => {
 
 // ── 初始化历史记录 ──
 initHistory()
-setHistoryRestoreCallback(async (word) => {
-  clearGraph()
+setHistoryRestoreCallback(async (word, graphData) => {
   resetView()
   emptyState.classList.add('hidden')
+  currentWord = word
+  inputApi.dock()
 
-  const root = addRootNode({ zh: word, en: '...' })
-
-  try {
-    const words = await fetchAssociations(word)
-    const match = words.find(w => w.zh === word)
-    if (match) {
-      const el = graphLayer.querySelector(`[data-id="${root.id}"] .en`)
-      if (el) el.textContent = match.en
-      root.en = match.en
+  if (graphData) {
+    importGraphState(graphData)
+  } else {
+    clearGraph()
+    const root = addRootNode({ zh: word, en: '...' })
+    try {
+      const words = await fetchAssociations(word)
+      const match = words.find(w => w.zh === word)
+      if (match) {
+        const el = graphLayer.querySelector(`[data-id="${root.id}"] .en`)
+        if (el) el.textContent = match.en
+        root.en = match.en
+      }
+      expandNode(root.id, words)
+    } catch (err) {
+      console.error('联想失败:', err)
     }
-    expandNode(root.id, words)
-  } catch (err) {
-    console.error('联想失败:', err)
   }
 })
 

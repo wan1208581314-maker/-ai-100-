@@ -73,7 +73,7 @@ export function initHistory() {
       item.addEventListener('click', () => {
         const idx = parseInt(item.dataset.index)
         const h = getHistory()[idx]
-        if (h && onRestore) onRestore(h.word)
+        if (h && onRestore) onRestore(h.word, h.graph)
         close()
       })
     })
@@ -85,10 +85,20 @@ export function setHistoryRestoreCallback(cb) {
   onRestore = cb
 }
 
-export function addHistory(word) {
+export function addHistory(word, graphState) {
   const history = getHistory()
-  history.unshift({ word, time: Date.now() })
+  const entry = { word, time: Date.now() }
+  if (graphState) entry.graph = graphState
+  history.unshift(entry)
   if (history.length > 50) history.pop()
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(history))
+}
+
+export function updateLatestHistory(graphState, word) {
+  const history = getHistory()
+  if (history.length === 0) return
+  if (word && history[0].word !== word) return
+  history[0].graph = graphState
   localStorage.setItem(STORAGE_KEY, JSON.stringify(history))
 }
 

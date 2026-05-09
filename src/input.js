@@ -19,8 +19,10 @@ export function initInput(onSubmit) {
     if (!val) return
     input.value = ''
     onSubmit(val)
+    dock()
+  }
 
-    // 第一次提交后移到底部
+  function dock() {
     if (area.classList.contains('centered')) {
       area.classList.remove('centered')
       area.classList.add('docked')
@@ -31,4 +33,6 @@ export function initInput(onSubmit) {
     if (e.key === 'Enter') submit()
   })
   btn.addEventListener('click', submit)
+
+  return { dock }
 }
