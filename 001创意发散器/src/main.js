@@ -133,6 +133,13 @@ const inputApi = initInput(async (word) => {
     addHistory(word, exportGraphState())
   } catch (err) {
     console.error('联想失败:', err)
+    clearGraph()
+    resetView()
+    emptyState.classList.remove('hidden')
+    app.classList.remove('has-graph')
+    currentWord = null
+    inputApi.undock()
+    alert(err.message || '联想失败，请稍后重试')
   }
 })
 

@@ -11,6 +11,14 @@ export function extractJsonArray(content) {
   return JSON.parse(content.slice(start, end + 1))
 }
 
+export function publicErrorMessage(err, fallback) {
+  const message = err?.message || fallback
+  if (message.includes('Authentication') || message.includes('api key')) {
+    return 'DeepSeek API Key 无效或未配置，请检查部署环境变量'
+  }
+  return fallback
+}
+
 export async function callDeepSeek(messages, temperature = 1.0) {
   const apiKey = process.env.DEEPSEEK_API_KEY
   if (!apiKey || apiKey === 'your_api_key_here') {

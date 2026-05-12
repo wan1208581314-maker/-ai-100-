@@ -1,4 +1,4 @@
-import { callDeepSeek, rejectNonPost } from './_deepseek.js'
+import { callDeepSeek, publicErrorMessage, rejectNonPost } from './_deepseek.js'
 
 export default async function handler(req, res) {
   if (rejectNonPost(req, res)) return
@@ -24,6 +24,6 @@ export default async function handler(req, res) {
     res.json({ idea })
   } catch (err) {
     console.error('创意生成错误:', err)
-    res.status(500).json({ error: '创意生成失败' })
+    res.status(500).json({ error: publicErrorMessage(err, '创意生成失败，请稍后重试') })
   }
 }
