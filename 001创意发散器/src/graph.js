@@ -29,6 +29,9 @@ let dragNode = null
 let dragOffsetX = 0
 let dragOffsetY = 0
 let dragMoved = false
+let dragStartClientX = 0
+let dragStartClientY = 0
+const DRAG_THRESHOLD = 6
 
 // 触摸状态
 let activePointers = new Map()
@@ -266,8 +269,12 @@ function moveInteraction(clientX, clientY) {
   }
 
   if (!dragNode) return
-  dragMoved = true
   const { node, el } = dragNode
+  if (!dragMoved) {
+    const moved = Math.hypot(clientX - dragStartClientX, clientY - dragStartClientY)
+    if (moved < DRAG_THRESHOLD) return
+    dragMoved = true
+  }
   const world = screenToWorld(clientX, clientY)
   node.x = world.x - dragOffsetX
   node.y = world.y - dragOffsetY
@@ -513,6 +520,8 @@ function renderNode(node) {
     el.setPointerCapture(e.pointerId)
     const world = screenToWorld(e.clientX, e.clientY)
     dragNode = { node, el }
+    dragStartClientX = e.clientX
+    dragStartClientY = e.clientY
     dragOffsetX = world.x - node.x
     dragOffsetY = world.y - node.y
     dragMoved = false
