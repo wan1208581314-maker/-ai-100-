@@ -351,7 +351,7 @@ export function initGraph(graphEl, svgEl, transformEl, onSelChange, onGraphUpdat
     panStartPanY = panY
     document.body.style.cursor = 'grabbing'
     e.preventDefault()
-  })
+  }, { capture: true })
 
   document.addEventListener('wheel', (e) => {
     if (e.target.closest('.input-area, .canvas-controls, .history-drawer, .result-modal, .generate-btn')) return

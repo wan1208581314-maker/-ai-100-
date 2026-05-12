@@ -95,6 +95,7 @@ controls.addEventListener('click', (e) => {
     clearGraph()
     resetView()
     emptyState.classList.remove('hidden')
+    app.classList.remove('has-graph')
     currentWord = null
   }
   updateZoomIndicator()
@@ -114,6 +115,7 @@ const inputApi = initInput(async (word) => {
   clearGraph()
   resetView()
   emptyState.classList.add('hidden')
+  app.classList.add('has-graph')
   currentWord = word
 
   const root = addRootNode({ zh: word, en: '...' })
@@ -139,6 +141,7 @@ initHistory()
 setHistoryRestoreCallback(async (word, graphData) => {
   resetView()
   emptyState.classList.add('hidden')
+  app.classList.add('has-graph')
   currentWord = word
   inputApi.dock()
 
