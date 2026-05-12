@@ -584,7 +584,13 @@ function showConfirmIcon(node, nodeEl) {
   icon.className = 'confirm-icon'
   icon.title = '点击展开联想'
 
+  icon.addEventListener('pointerdown', (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+  })
+
   icon.addEventListener('click', (e) => {
+    e.preventDefault()
     e.stopPropagation()
     removeConfirmIcon()
     handleNodeExpand(node, nodeEl)
@@ -627,6 +633,7 @@ async function handleNodeExpand(node, nodeEl) {
     updateNodeBadge(node)
   } catch (err) {
     console.error('联想失败:', err)
+    alert(err.message || '联想失败，请稍后重试')
   } finally {
     loader.remove()
   }
