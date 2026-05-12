@@ -30,6 +30,12 @@ let dragOffsetX = 0
 let dragOffsetY = 0
 let dragMoved = false
 
+// 触摸状态
+let activePointers = new Map()
+let pinchStartDistance = 0
+let pinchStartZoom = 1
+let pinchStartWorld = null
+
 // 弹簧物理状态
 let springChildren = null // { parentId, children: [{id, relX, relY, curX, curY, el}] }
 
@@ -50,6 +56,64 @@ function screenToWorld(sx, sy) {
 function applyTransform() {
   transformContainer.style.transform = `translate(${panX}px, ${panY}px) scale(${zoom})`
   transformContainer.style.transformOrigin = '0 0'
+  window.dispatchEvent(new CustomEvent('graph:viewchange', {
+    detail: { zoom, pan: { x: panX, y: panY } },
+  }))
+}
+
+function clampZoom(value) {
+  return Math.min(Math.max(value, 0.2), 5)
+}
+
+function getPointerDistance(a, b) {
+  return Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY)
+}
+
+function getPointerMidpoint(a, b) {
+  return {
+    x: (a.clientX + b.clientX) / 2,
+    y: (a.clientY + b.clientY) / 2,
+  }
+}
+
+function resetPinchState() {
+  pinchStartDistance = 0
+  pinchStartWorld = null
+}
+
+function updatePointer(e) {
+  if (!activePointers.has(e.pointerId)) return
+  activePointers.set(e.pointerId, {
+    clientX: e.clientX,
+    clientY: e.clientY,
+  })
+}
+
+function beginPinchIfNeeded() {
+  if (activePointers.size < 2 || pinchStartDistance > 0) return
+  const [a, b] = [...activePointers.values()]
+  const midpoint = getPointerMidpoint(a, b)
+  pinchStartDistance = getPointerDistance(a, b)
+  pinchStartZoom = zoom
+  pinchStartWorld = screenToWorld(midpoint.x, midpoint.y)
+  isPanning = false
+  if (dragNode) {
+    dragNode.el.classList.remove('dragging')
+    dragNode = null
+  }
+}
+
+function handlePinchZoom() {
+  if (activePointers.size < 2 || !pinchStartWorld || pinchStartDistance === 0) return false
+  const [a, b] = [...activePointers.values()]
+  const distance = getPointerDistance(a, b)
+  if (distance === 0) return true
+  const midpoint = getPointerMidpoint(a, b)
+  zoom = clampZoom(pinchStartZoom * (distance / pinchStartDistance))
+  panX = midpoint.x - pinchStartWorld.x * zoom
+  panY = midpoint.y - pinchStartWorld.y * zoom
+  applyTransform()
+  return true
 }
 
 function getAllDescendants(parentId) {
@@ -193,10 +257,10 @@ function clearSpring() {
 
 // ── 事件处理 ──
 
-function onMouseMove(e) {
+function moveInteraction(clientX, clientY) {
   if (isPanning) {
-    panX = panStartPanX + (e.clientX - panStartX)
-    panY = panStartPanY + (e.clientY - panStartY)
+    panX = panStartPanX + (clientX - panStartX)
+    panY = panStartPanY + (clientY - panStartY)
     applyTransform()
     return
   }
@@ -204,7 +268,7 @@ function onMouseMove(e) {
   if (!dragNode) return
   dragMoved = true
   const { node, el } = dragNode
-  const world = screenToWorld(e.clientX, e.clientY)
+  const world = screenToWorld(clientX, clientY)
   node.x = world.x - dragOffsetX
   node.y = world.y - dragOffsetY
   el.style.left = `${node.x - el.offsetWidth / 2}px`
@@ -220,7 +284,7 @@ function onMouseMove(e) {
   renderEdges()
 }
 
-function onMouseUp() {
+function endInteraction() {
   if (isPanning) {
     isPanning = false
     document.body.style.cursor = ''
@@ -234,6 +298,26 @@ function onMouseUp() {
   }
 }
 
+function shouldIgnoreCanvasTarget(target) {
+  return target.closest('.input-area, .canvas-controls, .theme-toggle, .history-btn, .history-drawer, .generate-btn, .result-modal, .selection-badge, .overlay, .global-loading')
+}
+
+function onPointerMove(e) {
+  updatePointer(e)
+  if (activePointers.size >= 2) {
+    e.preventDefault()
+    beginPinchIfNeeded()
+    if (handlePinchZoom()) return
+  }
+  moveInteraction(e.clientX, e.clientY)
+}
+
+function onPointerUp(e) {
+  activePointers.delete(e.pointerId)
+  if (activePointers.size < 2) resetPinchState()
+  endInteraction()
+}
+
 // ── 初始化 ──
 
 export function initGraph(graphEl, svgEl, transformEl, onSelChange, onGraphUpdate) {
@@ -244,12 +328,22 @@ export function initGraph(graphEl, svgEl, transformEl, onSelChange, onGraphUpdat
   onGraphChange = onGraphUpdate
 
   // 画布事件绑定在 document，用排除法过滤 UI 控件和节点
-  document.addEventListener('mousedown', (e) => {
+  document.addEventListener('pointerdown', (e) => {
     if (e.button !== 0) return
-    if (e.target.closest('.input-area, .canvas-controls, .theme-toggle, .history-btn, .history-drawer, .generate-btn, .result-modal, .selection-badge, .overlay, .global-loading')) return
+    if (shouldIgnoreCanvasTarget(e.target)) return
     if (e.target.closest('.node')) return
 
     removeConfirmIcon()
+    activePointers.set(e.pointerId, {
+      clientX: e.clientX,
+      clientY: e.clientY,
+    })
+    beginPinchIfNeeded()
+    if (activePointers.size >= 2) {
+      e.preventDefault()
+      return
+    }
+
     isPanning = true
     panStartX = e.clientX
     panStartY = e.clientY
@@ -263,7 +357,7 @@ export function initGraph(graphEl, svgEl, transformEl, onSelChange, onGraphUpdat
     if (e.target.closest('.input-area, .canvas-controls, .history-drawer, .result-modal, .generate-btn')) return
     e.preventDefault()
     const delta = e.deltaY > 0 ? 0.92 : 1.08
-    const newZoom = Math.min(Math.max(zoom * delta, 0.2), 5)
+    const newZoom = clampZoom(zoom * delta)
     const mx = e.clientX
     const my = e.clientY
     panX = mx - (mx - panX) * (newZoom / zoom)
@@ -272,8 +366,9 @@ export function initGraph(graphEl, svgEl, transformEl, onSelChange, onGraphUpdat
     applyTransform()
   }, { passive: false })
 
-  document.addEventListener('mousemove', onMouseMove)
-  document.addEventListener('mouseup', onMouseUp)
+  document.addEventListener('pointermove', onPointerMove, { passive: false })
+  document.addEventListener('pointerup', onPointerUp)
+  document.addEventListener('pointercancel', onPointerUp)
   window.addEventListener('resize', () => renderEdges())
 
   document.addEventListener('keydown', (e) => {
@@ -402,9 +497,20 @@ function renderNode(node) {
     toggleSelection(node, el)
   })
 
-  el.addEventListener('mousedown', (e) => {
+  el.addEventListener('pointerdown', (e) => {
     if (e.button !== 0) return
     e.stopPropagation()
+    activePointers.set(e.pointerId, {
+      clientX: e.clientX,
+      clientY: e.clientY,
+    })
+    beginPinchIfNeeded()
+    if (activePointers.size >= 2) {
+      e.preventDefault()
+      return
+    }
+
+    el.setPointerCapture(e.pointerId)
     const world = screenToWorld(e.clientX, e.clientY)
     dragNode = { node, el }
     dragOffsetX = world.x - node.x

@@ -82,6 +82,7 @@ const zoomIndicator = controls.querySelector('.zoom-indicator')
 function updateZoomIndicator() {
   zoomIndicator.textContent = `${Math.round(getZoom() * 100)}%`
 }
+window.addEventListener('graph:viewchange', updateZoomIndicator)
 
 controls.addEventListener('click', (e) => {
   const btn = e.target.closest('[data-action]')

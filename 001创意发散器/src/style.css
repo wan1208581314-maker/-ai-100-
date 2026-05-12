@@ -45,6 +45,7 @@ body {
   width: 100vw;
   height: 100vh;
   user-select: none;
+  overscroll-behavior: none;
 }
 
 #app {
@@ -70,6 +71,7 @@ body {
   inset: 0;
   transform-origin: 0 0;
   z-index: 1;
+  touch-action: none;
 }
 
 /* ── SVG 连线层 ── */
@@ -119,6 +121,7 @@ body {
   z-index: 10;
   padding: 8px;
   text-align: center;
+  touch-action: none;
 }
 
 :root[data-theme="dark"] .node {
