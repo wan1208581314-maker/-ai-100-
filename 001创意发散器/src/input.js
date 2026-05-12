@@ -35,9 +35,9 @@ export function initInput(onSubmit) {
     input.disabled = true
     btn.disabled = true
     input.value = ''
+    dock()
     try {
       await onSubmit(val)
-      dock()
     } finally {
       isSubmitting = false
       input.disabled = false
