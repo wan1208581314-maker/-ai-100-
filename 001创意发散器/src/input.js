@@ -21,17 +21,29 @@ export function initInput(onSubmit) {
   const btn = area.querySelector('.submit-btn')
   const slider = area.querySelector('.temp-slider')
   const tempValue = area.querySelector('.temp-value')
+  let isSubmitting = false
 
   slider.addEventListener('input', () => {
     tempValue.textContent = slider.value
   })
 
-  function submit() {
+  async function submit() {
+    if (isSubmitting) return
     const val = input.value.trim()
     if (!val) return
+    isSubmitting = true
+    input.disabled = true
+    btn.disabled = true
     input.value = ''
-    onSubmit(val)
-    dock()
+    try {
+      await onSubmit(val)
+      dock()
+    } finally {
+      isSubmitting = false
+      input.disabled = false
+      btn.disabled = false
+      input.focus()
+    }
   }
 
   function dock() {
@@ -45,10 +57,17 @@ export function initInput(onSubmit) {
     return parseFloat(slider.value)
   }
 
+  function undock() {
+    if (area.classList.contains('docked')) {
+      area.classList.remove('docked')
+      area.classList.add('centered')
+    }
+  }
+
   input.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') submit()
   })
   btn.addEventListener('click', submit)
 
-  return { dock, getTemperature }
+  return { dock, undock, getTemperature }
 }

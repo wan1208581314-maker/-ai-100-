@@ -1,4 +1,4 @@
-import { callDeepSeek, extractJsonArray, rejectNonPost } from './_deepseek.js'
+import { callDeepSeek, extractJsonArray, publicErrorMessage, rejectNonPost } from './_deepseek.js'
 
 export default async function handler(req, res) {
   if (rejectNonPost(req, res)) return
@@ -36,6 +36,6 @@ export default async function handler(req, res) {
     res.json({ words: extractJsonArray(content) })
   } catch (err) {
     console.error('联想接口错误:', err)
-    res.status(500).json({ error: '联想失败' })
+    res.status(500).json({ error: publicErrorMessage(err, '联想失败，请稍后重试') })
   }
 }
