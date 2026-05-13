@@ -41,6 +41,8 @@ let pinchStartWorld = null
 
 // 弹簧物理状态
 let springChildren = null // { parentId, children: [{id, relX, relY, curX, curY, el}] }
+let springFrameId = null
+let springSettling = false
 
 // 回调
 let onSelectionChange = null
@@ -103,6 +105,7 @@ function beginPinchIfNeeded() {
   if (dragNode) {
     dragNode.el.classList.remove('dragging')
     dragNode = null
+    clearSpring()
   }
 }
 
@@ -137,7 +140,7 @@ function getAllDescendants(parentId) {
   return result
 }
 
-// ── 弹簧物理（直接移动，不依赖 requestAnimationFrame） ──
+// ── 弹簧物理（带阻尼的拖尾跟随） ──
 
 function startSpring(draggedId) {
   clearSpring()
@@ -170,6 +173,8 @@ function startSpring(draggedId) {
       relY: child.y - parent.y,
       curX: child.x,
       curY: child.y,
+      velX: 0,
+      velY: 0,
       baseX: child.x,
       baseY: child.y,
       el,
@@ -184,23 +189,27 @@ function startSpring(draggedId) {
       amp1: 5 + depth * 3 + r1 * 5,
       amp2: 3 + r2 * 4,
       amp3: 2 + depth * 2 + r3 * 3,
-      // 柔和跟随：每个节点不同的跟随速度
-      followSpeed: 0.15 - depth * 0.03 + r1 * 0.04,  // 0.12~0.19
+      stiffness: 0.28 - Math.min(depth, 4) * 0.025 + r1 * 0.03,
+      damping: 0.72 + r2 * 0.04,
+      maxLag: 42 + depth * 8,
     }
   }).filter(Boolean)
 
   if (children.length === 0) return
 
   springChildren = { parentId: draggedId, children }
+  springSettling = false
+  requestSpringFrame()
 }
 
 function updateSpring() {
-  if (!springChildren) return
+  if (!springChildren) return true
 
   const parent = nodes.find(n => n.id === springChildren.parentId)
-  if (!parent) return
+  if (!parent) return true
 
   const t = performance.now()
+  let settled = true
 
   springChildren.children.forEach(sc => {
     const node = nodes.find(n => n.id === sc.id)
@@ -210,23 +219,57 @@ function updateSpring() {
     const targetX = parent.x + sc.relX
     const targetY = parent.y + sc.relY
 
-    // 拖动时保持整体同步，只叠加很轻的漂浮感，避免子节点慢半拍。
-    const driftScale = 0.35
-    const driftX = (Math.sin(t * sc.freq1 + sc.phase1) * sc.amp1
-                  + Math.sin(t * sc.freq2 + sc.phase2) * sc.amp2) * driftScale
-    const driftY = (Math.cos(t * sc.freq1 * 1.3 + sc.phase1 + 1) * sc.amp1
-                  + Math.cos(t * sc.freq2 * 0.8 + sc.phase2 + 2) * sc.amp2) * driftScale
+    const pullX = targetX - sc.curX
+    const pullY = targetY - sc.curY
+    sc.velX = (sc.velX + pullX * sc.stiffness) * sc.damping
+    sc.velY = (sc.velY + pullY * sc.stiffness) * sc.damping
+    sc.curX += sc.velX
+    sc.curY += sc.velY
 
-    sc.curX = targetX
-    sc.curY = targetY
-    node.x = targetX + driftX
-    node.y = targetY + driftY
+    const lagX = sc.curX - targetX
+    const lagY = sc.curY - targetY
+    const lag = Math.hypot(lagX, lagY)
+    if (lag > sc.maxLag) {
+      const ratio = sc.maxLag / lag
+      sc.curX = targetX + lagX * ratio
+      sc.curY = targetY + lagY * ratio
+      sc.velX *= 0.35
+      sc.velY *= 0.35
+    }
+
+    const driftScale = 0.22
+    const driftX = Math.sin(t * sc.freq1 + sc.phase1) * sc.amp1 * driftScale
+    const driftY = Math.cos(t * sc.freq2 + sc.phase2) * sc.amp2 * driftScale
+
+    node.x = sc.curX + driftX
+    node.y = sc.curY + driftY
     sc.displayX = node.x
     sc.displayY = node.y
     sc.el.style.transform = `translate(${node.x - sc.baseX}px, ${node.y - sc.baseY}px)`
+
+    const distance = Math.hypot(targetX - sc.curX, targetY - sc.curY)
+    const speed = Math.hypot(sc.velX, sc.velY)
+    if (distance > 0.7 || speed > 0.25) settled = false
   })
 
   renderEdges()
+  return settled
+}
+
+function requestSpringFrame() {
+  if (springFrameId) return
+  springFrameId = requestAnimationFrame(runSpringFrame)
+}
+
+function runSpringFrame() {
+  springFrameId = null
+  if (!springChildren) return
+  const settled = updateSpring()
+  if (dragNode || !springSettling || !settled) {
+    requestSpringFrame()
+    return
+  }
+  commitSpring()
 }
 
 function commitSpring() {
@@ -243,10 +286,15 @@ function commitSpring() {
     if (node) updateNodePosition(node)
   })
   springChildren = null
+  springSettling = false
   if (onGraphChange) onGraphChange()
 }
 
 function clearSpring() {
+  if (springFrameId) {
+    cancelAnimationFrame(springFrameId)
+    springFrameId = null
+  }
   if (springChildren) {
     springChildren.children.forEach(sc => {
       sc.el.style.transform = ''
@@ -255,6 +303,7 @@ function clearSpring() {
     })
     springChildren = null
   }
+  springSettling = false
 }
 
 // ── 事件处理 ──
@@ -284,8 +333,7 @@ function moveInteraction(clientX, clientY) {
   if (!springChildren || springChildren.parentId !== node.id) {
     startSpring(node.id)
   }
-  // 更新弹簧中子节点位置
-  updateSpring()
+  requestSpringFrame()
 
   renderEdges()
 }
@@ -297,10 +345,12 @@ function endInteraction() {
     return
   }
   if (dragNode) {
-    // 提交弹簧中子节点的最终位置
-    commitSpring()
     dragNode.el.classList.remove('dragging')
     dragNode = null
+    if (springChildren) {
+      springSettling = true
+      requestSpringFrame()
+    }
   }
 }
 
