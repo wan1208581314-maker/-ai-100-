@@ -5,6 +5,7 @@ let nodes = []
 let edges = []
 let nodeIdCounter = 0
 let selectedNodes = new Set()
+let expandingNodes = new Set()
 
 // 撤销栈
 let undoStack = []
@@ -567,6 +568,7 @@ function renderNode(node) {
 
   el.addEventListener('pointerdown', (e) => {
     if (e.button !== 0) return
+    if (expandingNodes.has(node.id)) return
     e.stopPropagation()
     activePointers.set(e.pointerId, {
       clientX: e.clientX,
@@ -683,6 +685,8 @@ function removeConfirmIcon() {
 async function handleNodeExpand(node, nodeEl) {
   if (nodeEl.querySelector('.loader')) return
 
+  expandingNodes.add(node.id)
+  nodeEl.classList.add('expanding')
   const loader = document.createElement('div')
   loader.className = 'loader'
   nodeEl.appendChild(loader)
@@ -696,6 +700,8 @@ async function handleNodeExpand(node, nodeEl) {
     console.error('联想失败:', err)
     alert(err.message || '联想失败，请稍后重试')
   } finally {
+    expandingNodes.delete(node.id)
+    nodeEl.classList.remove('expanding')
     loader.remove()
   }
 }
@@ -823,6 +829,7 @@ export function clearGraph() {
   nodes = []
   edges = []
   selectedNodes.clear()
+  expandingNodes.clear()
   undoStack = []
   nodeIdCounter = 0
   graphLayer.innerHTML = ''

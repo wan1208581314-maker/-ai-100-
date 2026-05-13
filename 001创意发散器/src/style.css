@@ -143,6 +143,10 @@ body {
   cursor: grabbing;
 }
 
+.node.expanding {
+  cursor: wait;
+}
+
 .node.large {
   width: var(--node-size-large);
   height: var(--node-size-large);
