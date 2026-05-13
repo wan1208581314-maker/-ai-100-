@@ -11,14 +11,14 @@ export function initGenerator(getSelectedWords) {
   // 生成按钮
   const btn = document.createElement('button')
   btn.className = 'generate-btn'
-  btn.textContent = '生成创意'
+  btn.textContent = '生成一个想法'
   btn.disabled = true
   app.appendChild(btn)
 
   // 加载提示
   const loading = document.createElement('div')
   loading.className = 'global-loading'
-  loading.innerHTML = '<div class="spinner"></div><span>正在生成创意方案...</span>'
+  loading.innerHTML = '<div class="spinner"></div><span>正在生成想法...</span>'
   app.appendChild(loading)
 
   // 结果弹窗
@@ -28,10 +28,11 @@ export function initGenerator(getSelectedWords) {
     <div class="modal-backdrop"></div>
     <div class="modal-content">
       <div class="modal-header">
-        <h2>创意方案</h2>
+        <h2>一个想法</h2>
         <button class="modal-close">&#10005;</button>
       </div>
       <div class="modal-tags"></div>
+      <h3 class="idea-title"></h3>
       <div class="modal-body"></div>
     </div>
   `
@@ -40,6 +41,7 @@ export function initGenerator(getSelectedWords) {
   const modalBackdrop = modal.querySelector('.modal-backdrop')
   const modalClose = modal.querySelector('.modal-close')
   const modalTags = modal.querySelector('.modal-tags')
+  const ideaTitle = modal.querySelector('.idea-title')
   const modalBody = modal.querySelector('.modal-body')
 
   modalBackdrop.addEventListener('click', closeModal)
@@ -67,8 +69,10 @@ export function initGenerator(getSelectedWords) {
 
     try {
       const idea = await fetchCreativeIdeas(words)
+      const [title, ...bodyLines] = idea.split('\n').filter(Boolean)
       modalTags.innerHTML = words.map(w => `<span>${w.zh}</span>`).join('')
-      modalBody.textContent = idea
+      ideaTitle.textContent = title || '一个想法'
+      modalBody.textContent = bodyLines.join('').trim()
       modal.classList.add('open')
     } catch (err) {
       console.error('生成创意失败:', err)
