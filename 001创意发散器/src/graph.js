@@ -623,11 +623,8 @@ function renderEdges() {
     const endY = to.y - uy * toRadius
     if (Math.hypot(endX - startX, endY - startY) < 8) return
 
-    const cx = (startX + endX) / 2 - dy * 0.12
-    const cy = (startY + endY) / 2 + dx * 0.12
-
     const path = document.createElementNS('http://www.w3.org/2000/svg', 'path')
-    path.setAttribute('d', `M ${startX} ${startY} Q ${cx} ${cy} ${endX} ${endY}`)
+    path.setAttribute('d', `M ${startX} ${startY} L ${endX} ${endY}`)
     svgLayer.appendChild(path)
   })
 }
