@@ -200,8 +200,6 @@ function updateSpring() {
   const parent = nodes.find(n => n.id === springChildren.parentId)
   if (!parent) return
 
-  const t = performance.now()
-
   springChildren.children.forEach(sc => {
     const node = nodes.find(n => n.id === sc.id)
     if (!node) return
@@ -210,20 +208,10 @@ function updateSpring() {
     const targetX = parent.x + sc.relX
     const targetY = parent.y + sc.relY
 
-    // 柔和 lerp 跟随（每个节点速度不同 → 参差不齐的跟随感）
-    sc.curX += (targetX - sc.curX) * sc.followSpeed
-    sc.curY += (targetY - sc.curY) * sc.followSpeed
-
-    // 飘动叠加
-    const driftX = Math.sin(t * sc.freq1 + sc.phase1) * sc.amp1
-                  + Math.sin(t * sc.freq2 + sc.phase2) * sc.amp2
-                  + Math.sin(t * sc.freq3 + sc.phase3) * sc.amp3
-    const driftY = Math.cos(t * sc.freq1 * 1.3 + sc.phase1 + 1) * sc.amp1
-                  + Math.cos(t * sc.freq2 * 0.8 + sc.phase2 + 2) * sc.amp2
-                  + Math.cos(t * sc.freq3 * 1.7 + sc.phase3 + 3) * sc.amp3
-
-    node.x = sc.curX + driftX
-    node.y = sc.curY + driftY
+    sc.curX = targetX
+    sc.curY = targetY
+    node.x = targetX
+    node.y = targetY
     sc.displayX = node.x
     sc.displayY = node.y
     sc.el.style.transform = `translate(${node.x - sc.baseX}px, ${node.y - sc.baseY}px)`
