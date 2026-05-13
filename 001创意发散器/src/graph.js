@@ -43,6 +43,8 @@ let pinchStartWorld = null
 let springChildren = null // { parentId, children: [{id, relX, relY, curX, curY, el}] }
 let springFrameId = null
 let springSettling = false
+let lastDragNodeX = 0
+let lastDragNodeY = 0
 
 // 回调
 let onSelectionChange = null
@@ -173,8 +175,8 @@ function startSpring(draggedId) {
       relY: child.y - parent.y,
       curX: child.x,
       curY: child.y,
-      velX: 0,
-      velY: 0,
+      tailX: 0,
+      tailY: 0,
       baseX: child.x,
       baseY: child.y,
       el,
@@ -189,9 +191,10 @@ function startSpring(draggedId) {
       amp1: 5 + depth * 3 + r1 * 5,
       amp2: 3 + r2 * 4,
       amp3: 2 + depth * 2 + r3 * 3,
-      stiffness: 0.28 - Math.min(depth, 4) * 0.025 + r1 * 0.03,
-      damping: 0.72 + r2 * 0.04,
-      maxLag: 42 + depth * 8,
+      tailStrength: 0.55 + Math.min(depth, 4) * 0.1 + r1 * 0.1,
+      tailDamping: 0.78 + r2 * 0.06,
+      tailEase: 0.22 + r3 * 0.06,
+      maxTail: 54 + depth * 10,
     }
   }).filter(Boolean)
 
@@ -199,6 +202,8 @@ function startSpring(draggedId) {
 
   springChildren = { parentId: draggedId, children }
   springSettling = false
+  lastDragNodeX = parent.x
+  lastDragNodeY = parent.y
   requestSpringFrame()
 }
 
@@ -209,6 +214,10 @@ function updateSpring() {
   if (!parent) return true
 
   const t = performance.now()
+  const parentDeltaX = parent.x - lastDragNodeX
+  const parentDeltaY = parent.y - lastDragNodeY
+  lastDragNodeX = parent.x
+  lastDragNodeY = parent.y
   let settled = true
 
   springChildren.children.forEach(sc => {
@@ -219,23 +228,23 @@ function updateSpring() {
     const targetX = parent.x + sc.relX
     const targetY = parent.y + sc.relY
 
-    const pullX = targetX - sc.curX
-    const pullY = targetY - sc.curY
-    sc.velX = (sc.velX + pullX * sc.stiffness) * sc.damping
-    sc.velY = (sc.velY + pullY * sc.stiffness) * sc.damping
-    sc.curX += sc.velX
-    sc.curY += sc.velY
-
-    const lagX = sc.curX - targetX
-    const lagY = sc.curY - targetY
-    const lag = Math.hypot(lagX, lagY)
-    if (lag > sc.maxLag) {
-      const ratio = sc.maxLag / lag
-      sc.curX = targetX + lagX * ratio
-      sc.curY = targetY + lagY * ratio
-      sc.velX *= 0.35
-      sc.velY *= 0.35
+    if (dragNode) {
+      sc.tailX = (sc.tailX - parentDeltaX * sc.tailStrength) * sc.tailDamping
+      sc.tailY = (sc.tailY - parentDeltaY * sc.tailStrength) * sc.tailDamping
+    } else {
+      sc.tailX *= 0.82
+      sc.tailY *= 0.82
     }
+
+    const tailLength = Math.hypot(sc.tailX, sc.tailY)
+    if (tailLength > sc.maxTail) {
+      const ratio = sc.maxTail / tailLength
+      sc.tailX *= ratio
+      sc.tailY *= ratio
+    }
+
+    sc.curX += (targetX + sc.tailX - sc.curX) * sc.tailEase
+    sc.curY += (targetY + sc.tailY - sc.curY) * sc.tailEase
 
     const driftScale = 0.22
     const driftX = Math.sin(t * sc.freq1 + sc.phase1) * sc.amp1 * driftScale
@@ -248,8 +257,8 @@ function updateSpring() {
     sc.el.style.transform = `translate(${node.x - sc.baseX}px, ${node.y - sc.baseY}px)`
 
     const distance = Math.hypot(targetX - sc.curX, targetY - sc.curY)
-    const speed = Math.hypot(sc.velX, sc.velY)
-    if (distance > 0.7 || speed > 0.25) settled = false
+    const tail = Math.hypot(sc.tailX, sc.tailY)
+    if (distance > 0.7 || tail > 0.7) settled = false
   })
 
   renderEdges()
