@@ -191,10 +191,11 @@ function startSpring(draggedId) {
       amp1: 5 + depth * 3 + r1 * 5,
       amp2: 3 + r2 * 4,
       amp3: 2 + depth * 2 + r3 * 3,
-      tailStrength: 0.55 + Math.min(depth, 4) * 0.1 + r1 * 0.1,
-      tailDamping: 0.78 + r2 * 0.06,
-      tailEase: 0.22 + r3 * 0.06,
-      maxTail: 54 + depth * 10,
+      tailStrength: 0.72 + Math.min(depth, 4) * 0.13 + r1 * 0.12,
+      tailDamping: 0.84 + r2 * 0.05,
+      tailEase: 0.15 + r3 * 0.04,
+      tailReturn: 0.9 + r2 * 0.04,
+      maxTail: 72 + depth * 14,
     }
   }).filter(Boolean)
 
@@ -232,8 +233,8 @@ function updateSpring() {
       sc.tailX = (sc.tailX - parentDeltaX * sc.tailStrength) * sc.tailDamping
       sc.tailY = (sc.tailY - parentDeltaY * sc.tailStrength) * sc.tailDamping
     } else {
-      sc.tailX *= 0.82
-      sc.tailY *= 0.82
+      sc.tailX *= sc.tailReturn
+      sc.tailY *= sc.tailReturn
     }
 
     const tailLength = Math.hypot(sc.tailX, sc.tailY)
@@ -246,9 +247,11 @@ function updateSpring() {
     sc.curX += (targetX + sc.tailX - sc.curX) * sc.tailEase
     sc.curY += (targetY + sc.tailY - sc.curY) * sc.tailEase
 
-    const driftScale = 0.22
-    const driftX = Math.sin(t * sc.freq1 + sc.phase1) * sc.amp1 * driftScale
-    const driftY = Math.cos(t * sc.freq2 + sc.phase2) * sc.amp2 * driftScale
+    const driftScale = dragNode ? 0.3 : 0.2
+    const driftX = (Math.sin(t * sc.freq1 + sc.phase1) * sc.amp1
+                  + Math.sin(t * sc.freq3 + sc.phase3) * sc.amp3) * driftScale
+    const driftY = (Math.cos(t * sc.freq2 + sc.phase2) * sc.amp2
+                  + Math.cos(t * sc.freq3 * 1.4 + sc.phase3) * sc.amp3) * driftScale
 
     node.x = sc.curX + driftX
     node.y = sc.curY + driftY
