@@ -224,6 +224,8 @@ function updateSpring() {
 
     node.x = sc.curX + driftX
     node.y = sc.curY + driftY
+    sc.displayX = node.x
+    sc.displayY = node.y
     sc.el.style.transform = `translate(${node.x - sc.baseX}px, ${node.y - sc.baseY}px)`
   })
 
@@ -235,8 +237,8 @@ function commitSpring() {
   springChildren.children.forEach(sc => {
     const node = nodes.find(n => n.id === sc.id)
     if (node) {
-      node.x = sc.curX
-      node.y = sc.curY
+      node.x = sc.displayX ?? sc.curX
+      node.y = sc.displayY ?? sc.curY
     }
     sc.el.style.transform = ''
     sc.el.style.animation = ''
