@@ -610,11 +610,24 @@ function renderEdges() {
 
     const dx = to.x - from.x
     const dy = to.y - from.y
-    const cx = (from.x + to.x) / 2 - dy * 0.12
-    const cy = (from.y + to.y) / 2 + dx * 0.12
+    const dist = Math.hypot(dx, dy)
+    if (dist < 1) return
+
+    const ux = dx / dist
+    const uy = dy / dist
+    const fromRadius = from.isRoot ? 64 : 49
+    const toRadius = to.isRoot ? 64 : 49
+    const startX = from.x + ux * fromRadius
+    const startY = from.y + uy * fromRadius
+    const endX = to.x - ux * toRadius
+    const endY = to.y - uy * toRadius
+    if (Math.hypot(endX - startX, endY - startY) < 8) return
+
+    const cx = (startX + endX) / 2 - dy * 0.12
+    const cy = (startY + endY) / 2 + dx * 0.12
 
     const path = document.createElementNS('http://www.w3.org/2000/svg', 'path')
-    path.setAttribute('d', `M ${from.x} ${from.y} Q ${cx} ${cy} ${to.x} ${to.y}`)
+    path.setAttribute('d', `M ${startX} ${startY} Q ${cx} ${cy} ${endX} ${endY}`)
     svgLayer.appendChild(path)
   })
 }
