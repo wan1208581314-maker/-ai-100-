@@ -22,6 +22,22 @@ function TrashSmallIcon() {
   );
 }
 
+function EyeIcon({ visible }) {
+  return visible ? (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#FFF" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  ) : (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#FFF" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 3l18 18" />
+      <path d="M10.6 10.6A3 3 0 0012 15a3 3 0 002.4-1.2" />
+      <path d="M9.9 4.2A10.8 10.8 0 0112 4c6.5 0 10 8 10 8a18.3 18.3 0 01-3.1 4.2" />
+      <path d="M6.1 6.1C3.5 8 2 12 2 12s3.5 8 10 8a10.9 10.9 0 004.1-.8" />
+    </svg>
+  );
+}
+
 function FireIcon() {
   return (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
@@ -38,9 +54,10 @@ function FireIcon() {
   );
 }
 
-export default function CardWarehouse({ allFoods, onDeleteCustom, onOpenMaker, onGoHome }) {
+export default function CardWarehouse({ allFoods, visibleCardIds, onToggleCardVisibility, onDeleteCustom, onOpenMaker, onGoHome }) {
   const [activeCategory, setActiveCategory] = useState("全部");
   const spinCount = parseInt(localStorage.getItem("spinCount") || "0", 10);
+  const visibleIdSet = new Set(visibleCardIds);
 
   const filteredFoods = activeCategory === "全部"
     ? allFoods
@@ -73,10 +90,18 @@ export default function CardWarehouse({ allFoods, onDeleteCustom, onOpenMaker, o
         </div>
       </div>
 
+      <div className="warehouse-selection-hint">
+        点亮卡片会出现在首页转盘；关闭后只留在仓库里
+      </div>
+
       <div className="warehouse-grid-wrap">
         <div className="warehouse-grid">
-          {filteredFoods.map((food) => (
-            <div key={food.id} className="relative">
+          {filteredFoods.map((food) => {
+            const isVisibleOnHome = visibleIdSet.has(food.id);
+            const canHide = isVisibleOnHome && visibleCardIds.length <= 1;
+
+            return (
+            <div key={food.id} className={isVisibleOnHome ? "relative warehouse-card-item" : "relative warehouse-card-item hidden-from-home"}>
               {food.isCustom ? (
                 <div className="warehouse-card-cell">
                   <CustomFoodCard food={food} width="100%" height="100%" />
@@ -91,6 +116,19 @@ export default function CardWarehouse({ allFoods, onDeleteCustom, onOpenMaker, o
                   />
                 </div>
               )}
+
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onToggleCardVisibility(food.id);
+                }}
+                disabled={canHide}
+                className={isVisibleOnHome ? "warehouse-visibility-toggle active" : "warehouse-visibility-toggle"}
+                aria-label={isVisibleOnHome ? "从首页转盘隐藏" : "显示到首页转盘"}
+              >
+                <EyeIcon visible={isVisibleOnHome} />
+              </button>
 
               {/* Delete button for custom cards */}
               {food.isCustom && (
@@ -110,7 +148,7 @@ export default function CardWarehouse({ allFoods, onDeleteCustom, onOpenMaker, o
                 </button>
               )}
             </div>
-          ))}
+          );})}
 
           {/* Add new card button */}
           <button

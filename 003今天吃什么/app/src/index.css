@@ -304,6 +304,15 @@ body {
   box-shadow: 0 6px 14px rgba(240, 118, 52, 0.22);
 }
 
+.warehouse-selection-hint {
+  flex: 0 0 auto;
+  padding: 0 20px 12px;
+  color: #A79582;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.4;
+}
+
 .warehouse-grid-wrap {
   flex: 1 1 auto;
   min-height: 0;
@@ -329,6 +338,42 @@ body {
   display: block;
   transform: scale(1.08);
   transform-origin: center;
+}
+
+.warehouse-card-item {
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.warehouse-card-item.hidden-from-home {
+  opacity: 0.48;
+}
+
+.warehouse-card-item.hidden-from-home .warehouse-card-cell {
+  filter: grayscale(0.45);
+}
+
+.warehouse-visibility-toggle {
+  position: absolute;
+  left: 6px;
+  top: 6px;
+  z-index: 3;
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(112, 101, 89, 0.78);
+  box-shadow: 0 6px 12px rgba(65, 48, 35, 0.16);
+  backdrop-filter: blur(6px);
+}
+
+.warehouse-visibility-toggle.active {
+  background: linear-gradient(135deg, #FF8C42 0%, #FF6335 100%);
+}
+
+.warehouse-visibility-toggle:disabled {
+  opacity: 0.46;
 }
 
 .warehouse-add-card {
@@ -509,6 +554,43 @@ body {
   align-items: center;
   gap: 4px;
   padding: 0 13px;
+}
+
+.maker-custom-tag {
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+.maker-custom-tag input {
+  min-width: 0;
+  height: 32px;
+  border: 1px solid rgba(160, 136, 112, 0.17);
+  border-radius: 999px;
+  background: rgba(255, 252, 245, 0.78);
+  color: #5F4B39;
+  padding: 0 12px;
+  outline: none;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.maker-custom-tag input::placeholder {
+  color: #B7A895;
+}
+
+.maker-custom-tag button {
+  min-width: 54px;
+  justify-content: center;
+  background: #F08A4C;
+  color: #FFF9F1;
+}
+
+.maker-custom-tag button:disabled,
+.maker-custom-tag input:disabled {
+  opacity: 0.58;
 }
 
 .maker-preview-panel {

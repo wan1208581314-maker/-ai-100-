@@ -13,6 +13,15 @@ const CARD_HEIGHT = Math.round((CARD_WIDTH / 3) * 4);
 const SIDE_CARD_WIDTH = 270;
 const SIDE_CARD_HEIGHT = Math.round((SIDE_CARD_WIDTH / 3) * 4);
 const CARD_SPACING = 218;
+const STOP_DURATION_MS = 3600;
+
+function mod(value, divisor) {
+  return ((value % divisor) + divisor) % divisor;
+}
+
+function easeOutQuint(t) {
+  return 1 - Math.pow(1 - t, 5);
+}
 
 function FireIcon() {
   return (
@@ -81,8 +90,12 @@ export default function App() {
   const stateRef = useRef("idle");
   const velocityRef = useRef(0);
   const targetCardRef = useRef(0);
+  const stopStartPosRef = useRef(0);
+  const stopTargetPosRef = useRef(0);
+  const stopStartTimeRef = useRef(0);
   const resultFoodRef = useRef(null);
   const isDraggingRef = useRef(false);
+  const audioContextRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
   const dragStartXRef = useRef(0);
   const dragStartPosRef = useRef(0);
@@ -112,7 +125,7 @@ export default function App() {
     setIsDragging(false);
     const pos = scrollPosRef.current;
     const snapped = Math.round(pos);
-    scrollPosRef.current = ((snapped % len) + len) % len;
+    scrollPosRef.current = mod(snapped, len);
     rerender();
   }, [len]);
 
@@ -136,12 +149,15 @@ export default function App() {
       if (stateRef.current === "spinning") {
         scrollPosRef.current += velocityRef.current * dt;
       } else if (stateRef.current === "stopping") {
-        velocityRef.current *= Math.pow(0.993, dt * 60);
-        scrollPosRef.current += velocityRef.current * dt;
-        if (Math.abs(velocityRef.current) < 1.5) {
+        const elapsed = now - stopStartTimeRef.current;
+        const progress = Math.min(elapsed / STOP_DURATION_MS, 1);
+        const eased = easeOutQuint(progress);
+        const start = stopStartPosRef.current;
+        const end = stopTargetPosRef.current;
+        scrollPosRef.current = start + (end - start) * eased;
+        if (progress >= 1) {
           const target = targetCardRef.current;
-          scrollPosRef.current = Math.round(scrollPosRef.current / len) * len + target;
-          scrollPosRef.current = ((scrollPosRef.current % len) + len) % len;
+          scrollPosRef.current = target;
           resultFoodRef.current = visibleFoods[target];
           stateRef.current = "result";
           setResultState("result");
@@ -162,30 +178,93 @@ export default function App() {
       animFrameRef.current = requestAnimationFrame(loop);
     };
     animFrameRef.current = requestAnimationFrame(loop);
-  }, [len, visibleFoods]);
+  }, [visibleFoods]);
+
+  const playKnobSound = useCallback((mode) => {
+    try {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContext) return;
+      const ctx = audioContextRef.current || new AudioContext();
+      audioContextRef.current = ctx;
+      if (ctx.state === "suspended") void ctx.resume();
+
+      const now = ctx.currentTime;
+      const master = ctx.createGain();
+      master.gain.setValueAtTime(0.0001, now);
+      master.gain.exponentialRampToValueAtTime(0.28, now + 0.012);
+      master.gain.exponentialRampToValueAtTime(0.0001, now + 0.42);
+      master.connect(ctx.destination);
+
+      const tick = ctx.createOscillator();
+      const tickGain = ctx.createGain();
+      tick.type = "triangle";
+      tick.frequency.setValueAtTime(mode === "ignite" ? 620 : 420, now);
+      tick.frequency.exponentialRampToValueAtTime(180, now + 0.13);
+      tickGain.gain.setValueAtTime(0.8, now);
+      tickGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.16);
+      tick.connect(tickGain).connect(master);
+      tick.start(now);
+      tick.stop(now + 0.18);
+
+      if (mode === "ignite") {
+        const bufferSize = Math.floor(ctx.sampleRate * 0.28);
+        const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+        const channel = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i += 1) {
+          channel[i] = (Math.random() * 2 - 1) * (1 - i / bufferSize);
+        }
+        const noise = ctx.createBufferSource();
+        const filter = ctx.createBiquadFilter();
+        const noiseGain = ctx.createGain();
+        noise.buffer = buffer;
+        filter.type = "bandpass";
+        filter.frequency.setValueAtTime(850, now);
+        filter.Q.setValueAtTime(0.9, now);
+        noiseGain.gain.setValueAtTime(0.0001, now + 0.05);
+        noiseGain.gain.exponentialRampToValueAtTime(0.35, now + 0.11);
+        noiseGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.38);
+        noise.connect(filter).connect(noiseGain).connect(master);
+        noise.start(now + 0.04);
+        noise.stop(now + 0.42);
+      }
+    } catch {
+      // Sound is a bonus interaction; keep the knob usable if audio is blocked.
+    }
+  }, []);
 
   const startSpinning = useCallback(() => {
     stateRef.current = "spinning";
     setResultState("spinning");
     setShowResultText(false);
-    velocityRef.current = -18;
+    velocityRef.current = -14;
     startAnimation();
   }, [startAnimation]);
 
   const startStopping = useCallback(() => {
+    if (len <= 0) return;
     stateRef.current = "stopping";
     setResultState("stopping");
     const target = Math.floor(Math.random() * len);
+    const current = scrollPosRef.current;
+    const currentNorm = mod(current, len);
+    const distanceToTarget = mod(currentNorm - target, len);
+    const minimumTravel = len * 2;
+    const travel = minimumTravel + (distanceToTarget < 0.35 ? distanceToTarget + len : distanceToTarget);
     targetCardRef.current = target;
+    stopStartPosRef.current = current;
+    stopTargetPosRef.current = current - travel;
+    stopStartTimeRef.current = performance.now();
   }, [len]);
 
   const handleKnobClick = useCallback(() => {
     if (stateRef.current === "spinning") {
+      playKnobSound("stop");
       startStopping();
     } else if (stateRef.current === "idle" || stateRef.current === "result") {
+      playKnobSound("ignite");
       startSpinning();
     }
-  }, [startSpinning, startStopping]);
+  }, [playKnobSound, startSpinning, startStopping]);
 
   const handleSaveCustomFood = useCallback((newFood) => {
     const updated = addCustomFood(newFood);
@@ -209,6 +288,21 @@ export default function App() {
     });
   }, []);
 
+  const handleToggleCardVisibility = useCallback((id) => {
+    setRemainingCards((prev) => {
+      const isVisible = prev.includes(id);
+      if (isVisible && prev.length <= 1) return prev;
+      const next = isVisible ? prev.filter((cid) => cid !== id) : [...prev, id];
+      localStorage.setItem("remainingCards", JSON.stringify(next));
+      const currentCard = visibleFoods[Math.round(scrollPosRef.current) % Math.max(visibleFoods.length, 1)];
+      if (isVisible && currentCard?.id === id) {
+        scrollPosRef.current = 0;
+        rerender();
+      }
+      return next;
+    });
+  }, [visibleFoods]);
+
   const handleClearHistory = useCallback(() => {
     setSpinCount(0);
     localStorage.setItem("spinCount", "0");
@@ -224,6 +318,7 @@ export default function App() {
   // eslint-disable-next-line react-hooks/refs
   const cards = getVisibleCards();
   const isSpinning = resultState === "spinning";
+  const isCarouselMoving = resultState === "spinning" || resultState === "stopping";
   const isResult = resultState === "result";
 
   return (
@@ -297,7 +392,7 @@ export default function App() {
                           transform: `translateX(calc(-50% + ${x}px)) rotate(${rot}deg) scale(${scale})`,
                           zIndex: z,
                           opacity,
-                          transition: (isSpinning || isDragging) ? "none" : "transform 0.3s ease",
+                          transition: (isCarouselMoving || isDragging) ? "none" : "transform 0.3s ease",
                         }}
                       >
                         <FoodCard
@@ -305,7 +400,7 @@ export default function App() {
                           width={w}
                           height={h}
                           isCenter={isCenter}
-                          motionBlur={isSpinning && !isCenter}
+                          motionBlur={isCarouselMoving && !isCenter}
                         />
                       </div>
                     );
@@ -352,6 +447,8 @@ export default function App() {
             >
               <CardWarehouse
                 allFoods={allFoods}
+                visibleCardIds={remainingCards}
+                onToggleCardVisibility={handleToggleCardVisibility}
                 onDeleteCustom={handleDeleteCustomFood}
                 onOpenMaker={() => setShowMaker(true)}
                 onGoHome={() => setCurrentPage("home")}

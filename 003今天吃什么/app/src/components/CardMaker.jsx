@@ -64,6 +64,7 @@ export default function CardMaker({ onClose, onSave }) {
   const [foodName, setFoodName] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedTags, setSelectedTags] = useState([]);
+  const [customTag, setCustomTag] = useState("");
   const [isDragOver, setIsDragOver] = useState(false);
   const [extractedColor, setExtractedColor] = useState(null);
   const [isCropping, setIsCropping] = useState(false);
@@ -77,11 +78,25 @@ export default function CardMaker({ onClose, onSave }) {
   const fileInputRef = useRef(null);
   const rawImageRef = useRef(null);
 
-  const toggleTag = (tag) => {
+  const toggleTag = useCallback((tag) => {
     setSelectedTags((prev) =>
       prev.includes(tag) ? prev.filter((t) => t !== tag) : prev.length < 3 ? [...prev, tag] : prev
     );
-  };
+  }, []);
+
+  const handleCategoryPick = useCallback((cat) => {
+    setSelectedCategory((prev) => (prev === cat ? "" : cat));
+  }, []);
+
+  const handleAddCustomTag = useCallback(() => {
+    const nextTag = customTag.trim().slice(0, 6);
+    if (!nextTag) return;
+    setSelectedTags((prev) => {
+      if (prev.includes(nextTag) || prev.length >= 3) return prev;
+      return [...prev, nextTag];
+    });
+    setCustomTag("");
+  }, [customTag]);
 
   const handleFile = useCallback((file) => {
     if (!file || !file.type.startsWith("image/")) return;
@@ -256,6 +271,7 @@ export default function CardMaker({ onClose, onSave }) {
 
   const displayImage = processedImage || rawImage;
   const canSave = processedImage && foodName.trim().length > 0 && selectedCategory;
+  const customSelectedTags = selectedTags.filter((tag) => !TAG_OPTIONS.includes(tag));
 
   const handleSave = () => {
     if (!canSave) return;
@@ -405,7 +421,7 @@ export default function CardMaker({ onClose, onSave }) {
                 <button
                   key={cat}
                   type="button"
-                  onClick={() => setSelectedCategory(selectedCategory === cat ? "" : cat)}
+                  onPointerUp={() => handleCategoryPick(cat)}
                   className={selectedCategory === cat ? "active" : ""}
                 >
                   {cat}
@@ -423,7 +439,7 @@ export default function CardMaker({ onClose, onSave }) {
                   <button
                     key={tag}
                     type="button"
-                    onClick={() => toggleTag(tag)}
+                    onPointerUp={() => toggleTag(tag)}
                     className={isSelected ? "active maker-tag-selected" : ""}
                   >
                     {tag}
@@ -431,6 +447,40 @@ export default function CardMaker({ onClose, onSave }) {
                   </button>
                 );
               })}
+              {customSelectedTags.map((tag) => (
+                <button
+                  key={`custom-${tag}`}
+                  type="button"
+                  onPointerUp={() => toggleTag(tag)}
+                  className="active maker-tag-selected"
+                >
+                  {tag}
+                  <CloseSmallIcon />
+                </button>
+              ))}
+              <label className="maker-custom-tag">
+                <input
+                  type="text"
+                  value={customTag}
+                  onChange={(e) => setCustomTag(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handleAddCustomTag();
+                    }
+                  }}
+                  placeholder={selectedTags.length >= 3 ? "最多3个标签" : "自定义标签"}
+                  maxLength={6}
+                  disabled={selectedTags.length >= 3}
+                />
+                <button
+                  type="button"
+                  onClick={handleAddCustomTag}
+                  disabled={!customTag.trim() || selectedTags.length >= 3}
+                >
+                  添加
+                </button>
+              </label>
             </div>
           </div>
         </section>
