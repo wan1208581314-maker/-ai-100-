@@ -1,0 +1,86 @@
+[
+  {
+    "name": "顶部栏",
+    "file": "top-bar-bg.png",
+    "bbox": [
+      83,
+      55,
+      1502,
+      166
+    ],
+    "size": [
+      1419,
+      111
+    ]
+  },
+  {
+    "name": "兔子",
+    "file": "bunny.png",
+    "bbox": [
+      129,
+      89,
+      177,
+      132
+    ],
+    "size": [
+      48,
+      43
+    ]
+  },
+  {
+    "name": "window_btn_minimize",
+    "file": "window-minimize.png",
+    "bbox": [
+      1291,
+      88,
+      1337,
+      132
+    ],
+    "size": [
+      46,
+      44
+    ]
+  },
+  {
+    "name": "window_btn_close",
+    "file": "window-close.png",
+    "bbox": [
+      1441,
+      88,
+      1487,
+      132
+    ],
+    "size": [
+      46,
+      44
+    ]
+  },
+  {
+    "name": "window_btn_maximize",
+    "file": "window-maximize.png",
+    "bbox": [
+      1366,
+      88,
+      1413,
+      132
+    ],
+    "size": [
+      47,
+      44
+    ]
+  },
+  {
+    "name": "图层 12",
+    "file": "wordmark.png",
+    "bbox": [
+      203,
+      88,
+      630,
+      126
+    ],
+    "size": [
+      427,
+      38
+    ]
+  }
+]

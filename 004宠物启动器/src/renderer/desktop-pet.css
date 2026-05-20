@@ -1,0 +1,217 @@
+html,
+body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  background: transparent;
+}
+
+body {
+  display: grid;
+  place-items: center;
+  user-select: none;
+}
+
+.desktop-pet {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+  --pet-scale: 1;
+  --pet-opacity: 1;
+  --pet-left: 50%;
+  --pet-top: 50%;
+}
+
+.desktop-pet-menu {
+  position: fixed;
+  left: 12px;
+  top: 12px;
+  z-index: 20;
+  width: 190px;
+  padding: 5px 0;
+  color: #1d2b55;
+  font-family: "Microsoft YaHei UI", "Segoe UI", system-ui, sans-serif;
+  background: rgba(255, 252, 255, .98);
+  border: 2px solid #bcb4d8;
+  box-shadow: 4px 4px 0 rgba(52, 42, 101, .18);
+}
+
+.desktop-pet-menu[hidden] {
+  display: none;
+}
+
+.desktop-pet-menu button {
+  display: block;
+  width: 100%;
+  padding: 6px 12px;
+  color: inherit;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.desktop-pet-menu__field {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 5px 10px;
+  padding: 7px 12px 8px;
+  color: #1d2b55;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.desktop-pet-menu__field input {
+  grid-column: 1 / -1;
+  width: 100%;
+  accent-color: #ff69b6;
+}
+
+.desktop-pet-menu__field output {
+  color: #35a84f;
+  font-weight: 1000;
+}
+
+.desktop-pet-menu button:hover {
+  background: #ffe5f4;
+}
+
+.desktop-pet-menu__submenu {
+  color: inherit;
+}
+
+.desktop-pet-menu__submenu summary {
+  display: block;
+  padding: 6px 12px;
+  color: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  list-style: none;
+}
+
+.desktop-pet-menu__submenu summary::-webkit-details-marker {
+  display: none;
+}
+
+.desktop-pet-menu__submenu summary::after {
+  float: right;
+  content: "▸";
+  color: #ff69b6;
+}
+
+.desktop-pet-menu__submenu[open] summary {
+  background: #ffe5f4;
+}
+
+.desktop-pet-menu__submenu[open] summary::after {
+  content: "▾";
+}
+
+.desktop-pet-menu__submenu-list {
+  padding: 2px 0 4px;
+  background: rgba(249, 246, 255, .72);
+  border-top: 1px solid #e4dcef;
+  border-bottom: 1px solid #e4dcef;
+}
+
+.desktop-pet-menu__submenu-list button {
+  padding-left: 22px;
+  font-size: 12px;
+}
+
+.desktop-pet-menu hr {
+  margin: 4px 0;
+  border: 0;
+  border-top: 1px solid #cfc7e4;
+}
+
+.desktop-pet__sprite {
+  position: absolute;
+  left: var(--pet-left);
+  top: var(--pet-top);
+  width: 192px;
+  height: 208px;
+  padding: 0;
+  background-color: transparent;
+  background-repeat: no-repeat;
+  background-size: 800% var(--sprite-bg-y, 900%);
+  background-position: 0 var(--sprite-row-y, 0%);
+  border: 0;
+  cursor: grab;
+  image-rendering: pixelated;
+  opacity: var(--pet-opacity);
+  transform: translate(-50%, -50%) scale(var(--pet-scale));
+  transform-origin: 50% 50%;
+  touch-action: none;
+  -webkit-app-region: no-drag;
+}
+
+.desktop-pet__sprite:active {
+  cursor: grabbing;
+}
+
+.desktop-pet__sprite:focus-visible {
+  outline: 2px solid rgba(255, 105, 182, .75);
+  outline-offset: 2px;
+}
+
+.desktop-pet__shadow {
+  position: absolute;
+  left: var(--pet-left);
+  top: calc(var(--pet-top) + 104px);
+  width: 136px;
+  height: 26px;
+  background: radial-gradient(ellipse at center, rgba(64, 40, 88, .28) 0%, rgba(64, 40, 88, .16) 46%, rgba(64, 40, 88, 0) 78%);
+  filter: blur(.6px);
+  opacity: var(--pet-opacity);
+  transform: translateX(-50%) skewX(-12deg) scale(var(--pet-scale));
+}
+
+.desktop-pet__bubble {
+  position: absolute;
+  left: var(--pet-left);
+  top: calc(var(--pet-top) - 124px * var(--pet-scale));
+  z-index: 12;
+  max-width: 170px;
+  padding: 7px 10px;
+  color: #1d2b55;
+  font-family: "Microsoft YaHei UI", "Segoe UI", system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 900;
+  line-height: 1.25;
+  text-align: center;
+  background: rgba(255, 252, 255, .98);
+  border: 2px solid #ff7ac2;
+  border-radius: 10px;
+  box-shadow: 3px 3px 0 rgba(52, 42, 101, .18);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.desktop-pet__bubble::after {
+  position: absolute;
+  left: 50%;
+  bottom: -8px;
+  width: 12px;
+  height: 12px;
+  content: "";
+  background: inherit;
+  border-right: 2px solid #ff7ac2;
+  border-bottom: 2px solid #ff7ac2;
+  transform: translateX(-50%) rotate(45deg);
+}
+
+@keyframes desktop-pet-cycle {
+  from {
+    background-position-x: 0%;
+  }
+  to {
+    background-position-x: var(--sprite-end-x, 71.4286%);
+  }
+}

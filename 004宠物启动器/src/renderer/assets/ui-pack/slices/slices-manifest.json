@@ -1,0 +1,437 @@
+[
+  {
+    "file": "scene-screen-bg.png",
+    "source": "scene",
+    "box": [
+      28,
+      24,
+      1235,
+      538
+    ],
+    "size": [
+      1207,
+      514
+    ],
+    "removeBg": false
+  },
+  {
+    "file": "btn-start.png",
+    "source": "controls",
+    "box": [
+      41,
+      37,
+      312,
+      174
+    ],
+    "size": [
+      271,
+      137
+    ],
+    "removeBg": true
+  },
+  {
+    "file": "btn-start-hover.png",
+    "source": "controls",
+    "box": [
+      329,
+      37,
+      601,
+      174
+    ],
+    "size": [
+      272,
+      137
+    ],
+    "removeBg": true
+  },
+  {
+    "file": "btn-start-pressed.png",
+    "source": "controls",
+    "box": [
+      619,
+      37,
+      887,
+      171
+    ],
+    "size": [
+      268,
+      134
+    ],
+    "removeBg": true
+  },
+  {
+    "file": "btn-start-disabled.png",
+    "source": "controls",
+    "box": [
+      904,
+      38,
+      1173,
+      171
+    ],
+    "size": [
+      269,
+      133
+    ],
+    "removeBg": true
+  },
+  {
+    "file": "btn-stop.png",
+    "source": "controls",
+    "box": [
+      41,
+      188,
+      314,
+      324
+    ],
+    "size": [
+      273,
+      136
+    ],
+    "removeBg": true
+  },
+  {
+    "file": "btn-switch.png",
+    "source": "controls",
+    "box": [
+      41,
+      485,
+      312,
+      623
+    ],
+    "size": [
+      271,
+      138
+    ],
+    "removeBg": true
+  },
+  {
+    "file": "btn-settings.png",
+    "source": "controls",
+    "box": [
+      40,
+      337,
+      311,
+      475
+    ],
+    "size": [
+      271,
+      138
+    ],
+    "removeBg": true
+  },
+  {
+    "file": "dpad.png",
+    "source": "controls",
+    "box": [
+      38,
+      639,
+      248,
+      853
+    ],
+    "size": [
+      210,
+      214
+    ],
+    "removeBg": true
+  },
+  {
+    "file": "toggle-on.png",
+    "source": "controls",
+    "box": [
+      1182,
+      807,
+      1252,
+      855
+    ],
+    "size": [
+      70,
+      48
+    ],
+    "removeBg": true
+  },
+  {
+    "file": "toggle-off.png",
+    "source": "controls",
+    "box": [
+      1182,
+      880,
+      1252,
+      928
+    ],
+    "size": [
+      70,
+      48
+    ],
+    "removeBg": true
+  },
+  {
+    "file": "card-active.png",
+    "source": "cards",
+    "box": [
+      12,
+      35,
+      377,
+      241
+    ],
+    "size": [
+      365,
+      206
+    ],
+    "removeBg": true
+  },
+  {
+    "file": "card-normal.png",
+    "source": "cards",
+    "box": [
+      377,
+      35,
+      739,
+      241
+    ],
+    "size": [
+      362,
+      206
+    ],
+    "removeBg": true
+  },
+  {
+    "file": "card-blue.png",
+    "source": "cards",
+    "box": [
+      15,
+      254,
+      343,
+      460
+    ],
+    "size": [
+      328,
+      206
+    ],
+    "removeBg": true
+  },
+  {
+    "file": "card-purple.png",
+    "source": "cards",
+    "box": [
+      332,
+      253,
+      630,
+      460
+    ],
+    "size": [
+      298,
+      207
+    ],
+    "removeBg": true
+  },
+  {
+    "file": "card-add.png",
+    "source": "cards",
+    "box": [
+      623,
+      256,
+      840,
+      460
+    ],
+    "size": [
+      217,
+      204
+    ],
+    "removeBg": true
+  },
+  {
+    "file": "avatar-active.png",
+    "source": "cards",
+    "box": [
+      43,
+      477,
+      166,
+      602
+    ],
+    "size": [
+      123,
+      125
+    ],
+    "removeBg": true
+  },
+  {
+    "file": "avatar-normal.png",
+    "source": "cards",
+    "box": [
+      200,
+      476,
+      324,
+      602
+    ],
+    "size": [
+      124,
+      126
+    ],
+    "removeBg": true
+  },
+  {
+    "file": "panel-status.png",
+    "source": "cards",
+    "box": [
+      847,
+      30,
+      1234,
+      266
+    ],
+    "size": [
+      387,
+      236
+    ],
+    "removeBg": true
+  },
+  {
+    "file": "panel-path.png",
+    "source": "cards",
+    "box": [
+      847,
+      274,
+      1234,
+      406
+    ],
+    "size": [
+      387,
+      132
+    ],
+    "removeBg": true
+  },
+  {
+    "file": "panel-behavior.png",
+    "source": "cards",
+    "box": [
+      845,
+      414,
+      1228,
+      711
+    ],
+    "size": [
+      383,
+      297
+    ],
+    "removeBg": true
+  },
+  {
+    "file": "panel-recent.png",
+    "source": "cards",
+    "box": [
+      844,
+      713,
+      1228,
+      1157
+    ],
+    "size": [
+      384,
+      444
+    ],
+    "removeBg": true
+  },
+  {
+    "file": "toast-success.png",
+    "source": "cards",
+    "box": [
+      25,
+      958,
+      387,
+      1049
+    ],
+    "size": [
+      362,
+      91
+    ],
+    "removeBg": true
+  },
+  {
+    "file": "toast-error.png",
+    "source": "cards",
+    "box": [
+      406,
+      958,
+      772,
+      1049
+    ],
+    "size": [
+      366,
+      91
+    ],
+    "removeBg": true
+  },
+  {
+    "file": "title-bar.png",
+    "source": "shell",
+    "box": [
+      876,
+      31,
+      1240,
+      124
+    ],
+    "size": [
+      364,
+      93
+    ],
+    "removeBg": true
+  },
+  {
+    "file": "screen-bezel.png",
+    "source": "shell",
+    "box": [
+      300,
+      539,
+      825,
+      896
+    ],
+    "size": [
+      525,
+      357
+    ],
+    "removeBg": true
+  },
+  {
+    "file": "left-panel-frame.png",
+    "source": "shell",
+    "box": [
+      16,
+      537,
+      306,
+      1070
+    ],
+    "size": [
+      290,
+      533
+    ],
+    "removeBg": true
+  },
+  {
+    "file": "right-panel-frame.png",
+    "source": "shell",
+    "box": [
+      904,
+      126,
+      1208,
+      537
+    ],
+    "size": [
+      304,
+      411
+    ],
+    "removeBg": true
+  },
+  {
+    "file": "controller-dock.png",
+    "source": "shell",
+    "box": [
+      303,
+      889,
+      967,
+      1073
+    ],
+    "size": [
+      664,
+      184
+    ],
+    "removeBg": true
+  }
+]

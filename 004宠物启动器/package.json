@@ -1,0 +1,20 @@
+{
+  "name": "pixel-pet-launcher",
+  "version": "0.1.0",
+  "description": "浅色可爱像素风桌宠启动器",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev"
+  },
+  "keywords": [
+    "desktop-pet",
+    "electron",
+    "pixel"
+  ],
+  "author": "Codex",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^33.4.11"
+  }
+}

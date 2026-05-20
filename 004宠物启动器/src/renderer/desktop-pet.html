@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Desktop Pet</title>
+    <link rel="stylesheet" href="./desktop-pet.css" />
+  </head>
+  <body>
+    <main class="desktop-pet" aria-label="桌面宠物">
+      <span class="desktop-pet__shadow" aria-hidden="true"></span>
+      <span class="desktop-pet__bubble" aria-live="polite" hidden></span>
+      <button class="desktop-pet__sprite" type="button" aria-label="桌面宠物"></button>
+      <nav class="desktop-pet-menu" aria-label="桌宠菜单" hidden>
+        <button type="button" data-pet-menu-action="waving">唤醒</button>
+        <button type="button" data-pet-menu-action="idle">回到待机</button>
+        <details class="desktop-pet-menu__submenu">
+          <summary>动作预览</summary>
+          <div class="desktop-pet-menu__submenu-list">
+            <button type="button" data-pet-menu-action="idle">0 待机</button>
+            <button type="button" data-pet-menu-action="running-right">1 向右跑</button>
+            <button type="button" data-pet-menu-action="running-left">2 向左跑</button>
+            <button type="button" data-pet-menu-action="waving">3 打招呼</button>
+            <button type="button" data-pet-menu-action="jumping">4 跳跃</button>
+            <button type="button" data-pet-menu-action="failed">5 哭泣</button>
+            <button type="button" data-pet-menu-action="waiting">6 互动</button>
+            <button type="button" data-pet-menu-action="running">7 游玩</button>
+            <button type="button" data-pet-menu-action="review">8 看消息</button>
+          </div>
+        </details>
+        <hr />
+        <label class="desktop-pet-menu__field">
+          <span>宠物大小</span>
+          <output data-setting-output="scale">1.00</output>
+          <input type="range" min="0.5" max="1.8" step="0.01" value="1" data-pet-setting="scale" />
+        </label>
+        <label class="desktop-pet-menu__field">
+          <span>透明度</span>
+          <output data-setting-output="opacity">1.00</output>
+          <input type="range" min="0.25" max="1" step="0.01" value="1" data-pet-setting="opacity" />
+        </label>
+        <button type="button" data-pet-menu-action="bottom-right">回到右下角</button>
+        <button type="button" data-pet-menu-action="pause">暂停/继续</button>
+        <hr />
+        <button type="button" data-pet-menu-action="close">退出</button>
+      </nav>
+    </main>
+    <script src="./desktop-pet.js"></script>
+  </body>
+</html>

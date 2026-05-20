@@ -1,0 +1,30 @@
+{
+  "name": "pixel-pet-launcher-ui-pack",
+  "version": "0.1.0",
+  "style": "pastel kawaii pixel handheld console",
+  "source": "image2 generated asset sheets",
+  "sheets": [
+    {
+      "file": "shell-frames-sheet.png",
+      "purpose": "large console shell, top bar, screen bezel, side panels, controller dock, small window controls, decorative vents and brackets"
+    },
+    {
+      "file": "controls-icons-sheet.png",
+      "purpose": "start/stop/switch/settings buttons, d-pad, toggles, progress bars, resource pills, status dots, app icons"
+    },
+    {
+      "file": "scene-props-sheet.png",
+      "purpose": "central screen background, pixel city window scene, desk props, lamp, plant, handheld console, drink, cushion, skyline strips"
+    },
+    {
+      "file": "cards-panels-sheet.png",
+      "purpose": "pet cartridge cards, avatar frames, status/path/behavior/recent panels, labels, meters, toast and modal frames"
+    }
+  ],
+  "recommendedPipeline": [
+    "Slice large reusable frames and controls from the sheets.",
+    "Keep text, pet status, progress values, and launch paths rendered by code.",
+    "Use scene-props-sheet.png as the main source for the central screen background.",
+    "Use real pet transparent sprites from src/renderer/assets/portraits on top of generated UI assets."
+  ]
+}

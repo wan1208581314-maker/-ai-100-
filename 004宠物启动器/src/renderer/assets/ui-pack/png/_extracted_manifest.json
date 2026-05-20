@@ -1,0 +1,1091 @@
+{
+  "source": "D:\\claude\\第四期桌宠启动器\\src\\renderer\\assets\\ui-pack\\slices\\用户附件.png",
+  "sourceSize": [
+    1586,
+    992
+  ],
+  "outputDirectory": "D:\\claude\\第四期桌宠启动器\\src\\renderer\\assets\\ui-pack\\png",
+  "count": 72,
+  "assets": [
+    {
+      "file": "shell_full_console.png",
+      "box": [
+        26,
+        24,
+        1559,
+        958
+      ],
+      "size": [
+        1533,
+        934
+      ],
+      "mask": "full_shell",
+      "note": "whole console shell with outer blue background removed"
+    },
+    {
+      "file": "shell_top_title_bar.png",
+      "box": [
+        75,
+        53,
+        1513,
+        130
+      ],
+      "size": [
+        1438,
+        77
+      ],
+      "mask": "rounded",
+      "note": ""
+    },
+    {
+      "file": "shell_left_sidebar_panel.png",
+      "box": [
+        65,
+        156,
+        414,
+        872
+      ],
+      "size": [
+        349,
+        716
+      ],
+      "mask": "rounded",
+      "note": ""
+    },
+    {
+      "file": "shell_right_sidebar_panel.png",
+      "box": [
+        1180,
+        156,
+        1516,
+        873
+      ],
+      "size": [
+        336,
+        717
+      ],
+      "mask": "rounded",
+      "note": ""
+    },
+    {
+      "file": "shell_center_screen_bezel.png",
+      "box": [
+        436,
+        156,
+        1156,
+        686
+      ],
+      "size": [
+        720,
+        530
+      ],
+      "mask": "rounded",
+      "note": ""
+    },
+    {
+      "file": "shell_controller_dock.png",
+      "box": [
+        435,
+        719,
+        1165,
+        889
+      ],
+      "size": [
+        730,
+        170
+      ],
+      "mask": "flood",
+      "note": ""
+    },
+    {
+      "file": "title_bunny_icon.png",
+      "box": [
+        110,
+        66,
+        169,
+        116
+      ],
+      "size": [
+        59,
+        50
+      ],
+      "mask": "opaque-tight-crop",
+      "note": " fixed after visual QA"
+    },
+    {
+      "file": "title_wordmark.png",
+      "box": [
+        186,
+        73,
+        610,
+        112
+      ],
+      "size": [
+        424,
+        39
+      ],
+      "mask": "flood",
+      "note": ""
+    },
+    {
+      "file": "top_center_dot_grip.png",
+      "box": [
+        720,
+        73,
+        872,
+        109
+      ],
+      "size": [
+        152,
+        36
+      ],
+      "mask": "flood",
+      "note": ""
+    },
+    {
+      "file": "top_pill_hearts.png",
+      "box": [
+        942,
+        72,
+        1020,
+        112
+      ],
+      "size": [
+        78,
+        40
+      ],
+      "mask": "rounded",
+      "note": ""
+    },
+    {
+      "file": "top_pill_coins.png",
+      "box": [
+        1034,
+        72,
+        1147,
+        112
+      ],
+      "size": [
+        113,
+        40
+      ],
+      "mask": "rounded",
+      "note": ""
+    },
+    {
+      "file": "top_pill_gems.png",
+      "box": [
+        1159,
+        72,
+        1247,
+        112
+      ],
+      "size": [
+        88,
+        40
+      ],
+      "mask": "rounded",
+      "note": ""
+    },
+    {
+      "file": "window_btn_minimize.png",
+      "box": [
+        1284,
+        70,
+        1330,
+        114
+      ],
+      "size": [
+        46,
+        44
+      ],
+      "mask": "rounded-fixed",
+      "note": " fixed after visual QA"
+    },
+    {
+      "file": "window_btn_maximize.png",
+      "box": [
+        1355,
+        70,
+        1402,
+        114
+      ],
+      "size": [
+        47,
+        44
+      ],
+      "mask": "rounded-fixed",
+      "note": " fixed after visual QA"
+    },
+    {
+      "file": "window_btn_close.png",
+      "box": [
+        1429,
+        70,
+        1475,
+        114
+      ],
+      "size": [
+        46,
+        44
+      ],
+      "mask": "rounded-fixed",
+      "note": " fixed after visual QA"
+    },
+    {
+      "file": "decor_left_sparkles.png",
+      "box": [
+        126,
+        176,
+        343,
+        205
+      ],
+      "size": [
+        217,
+        29
+      ],
+      "mask": "flood",
+      "note": ""
+    },
+    {
+      "file": "decor_bottom_vents_left.png",
+      "box": [
+        91,
+        889,
+        204,
+        915
+      ],
+      "size": [
+        113,
+        26
+      ],
+      "mask": "flood",
+      "note": ""
+    },
+    {
+      "file": "decor_bottom_vents_right.png",
+      "box": [
+        1394,
+        889,
+        1493,
+        915
+      ],
+      "size": [
+        99,
+        26
+      ],
+      "mask": "flood",
+      "note": ""
+    },
+    {
+      "file": "card_luya_selected.png",
+      "box": [
+        88,
+        229,
+        393,
+        394
+      ],
+      "size": [
+        305,
+        165
+      ],
+      "mask": "rounded",
+      "note": ""
+    },
+    {
+      "file": "card_piko_ready.png",
+      "box": [
+        91,
+        414,
+        386,
+        552
+      ],
+      "size": [
+        295,
+        138
+      ],
+      "mask": "rounded",
+      "note": ""
+    },
+    {
+      "file": "card_mimo_ready.png",
+      "box": [
+        91,
+        591,
+        386,
+        751
+      ],
+      "size": [
+        295,
+        160
+      ],
+      "mask": "rounded",
+      "note": ""
+    },
+    {
+      "file": "card_add_pet.png",
+      "box": [
+        92,
+        777,
+        378,
+        847
+      ],
+      "size": [
+        286,
+        70
+      ],
+      "mask": "rounded",
+      "note": ""
+    },
+    {
+      "file": "avatar_luya_card.png",
+      "box": [
+        106,
+        250,
+        215,
+        378
+      ],
+      "size": [
+        109,
+        128
+      ],
+      "mask": "rounded",
+      "note": ""
+    },
+    {
+      "file": "avatar_piko_card.png",
+      "box": [
+        108,
+        428,
+        215,
+        550
+      ],
+      "size": [
+        107,
+        122
+      ],
+      "mask": "rounded",
+      "note": ""
+    },
+    {
+      "file": "avatar_mimo_card.png",
+      "box": [
+        108,
+        607,
+        214,
+        728
+      ],
+      "size": [
+        106,
+        121
+      ],
+      "mask": "rounded",
+      "note": ""
+    },
+    {
+      "file": "card_luya_meter.png",
+      "box": [
+        230,
+        346,
+        351,
+        366
+      ],
+      "size": [
+        121,
+        20
+      ],
+      "mask": "flood",
+      "note": ""
+    },
+    {
+      "file": "card_piko_meter.png",
+      "box": [
+        231,
+        525,
+        351,
+        545
+      ],
+      "size": [
+        120,
+        20
+      ],
+      "mask": "flood",
+      "note": ""
+    },
+    {
+      "file": "card_mimo_meter.png",
+      "box": [
+        231,
+        703,
+        351,
+        723
+      ],
+      "size": [
+        120,
+        20
+      ],
+      "mask": "flood",
+      "note": ""
+    },
+    {
+      "file": "sidebar_scroll_thumb_top.png",
+      "box": [
+        373,
+        263,
+        403,
+        354
+      ],
+      "size": [
+        30,
+        91
+      ],
+      "mask": "flood",
+      "note": ""
+    },
+    {
+      "file": "sidebar_scroll_thumb_mid.png",
+      "box": [
+        373,
+        454,
+        389,
+        532
+      ],
+      "size": [
+        16,
+        78
+      ],
+      "mask": "flood",
+      "note": ""
+    },
+    {
+      "file": "sidebar_scroll_thumb_low.png",
+      "box": [
+        373,
+        633,
+        389,
+        710
+      ],
+      "size": [
+        16,
+        77
+      ],
+      "mask": "flood",
+      "note": ""
+    },
+    {
+      "file": "screen_content_full.png",
+      "box": [
+        449,
+        169,
+        1141,
+        667
+      ],
+      "size": [
+        692,
+        498
+      ],
+      "mask": "rounded",
+      "note": "central scene as shown, including toolbar and pet"
+    },
+    {
+      "file": "screen_toolbar.png",
+      "box": [
+        449,
+        168,
+        1141,
+        220
+      ],
+      "size": [
+        692,
+        52
+      ],
+      "mask": "rounded",
+      "note": ""
+    },
+    {
+      "file": "screen_scene_view.png",
+      "box": [
+        449,
+        219,
+        1141,
+        667
+      ],
+      "size": [
+        692,
+        448
+      ],
+      "mask": "rounded",
+      "note": "scene viewport including character/desk props"
+    },
+    {
+      "file": "scene_city_window_background.png",
+      "box": [
+        449,
+        219,
+        1015,
+        540
+      ],
+      "size": [
+        566,
+        321
+      ],
+      "mask": "opaque",
+      "note": "city/window area before right lamp section"
+    },
+    {
+      "file": "scene_pet_luya_large.png",
+      "box": [
+        676,
+        328,
+        906,
+        610
+      ],
+      "size": [
+        230,
+        282
+      ],
+      "mask": "flood_corners",
+      "note": "screenshot crop with border background removed where possible"
+    },
+    {
+      "file": "scene_plant.png",
+      "box": [
+        450,
+        415,
+        548,
+        554
+      ],
+      "size": [
+        98,
+        139
+      ],
+      "mask": "flood_corners",
+      "note": ""
+    },
+    {
+      "file": "scene_handheld_console.png",
+      "box": [
+        479,
+        547,
+        627,
+        674
+      ],
+      "size": [
+        148,
+        127
+      ],
+      "mask": "flood_corners",
+      "note": ""
+    },
+    {
+      "file": "scene_lamp.png",
+      "box": [
+        1016,
+        284,
+        1139,
+        512
+      ],
+      "size": [
+        123,
+        228
+      ],
+      "mask": "flood_corners",
+      "note": ""
+    },
+    {
+      "file": "scene_drink_can.png",
+      "box": [
+        1027,
+        519,
+        1108,
+        657
+      ],
+      "size": [
+        81,
+        138
+      ],
+      "mask": "flood_corners",
+      "note": ""
+    },
+    {
+      "file": "scene_cat_cushion.png",
+      "box": [
+        913,
+        544,
+        1020,
+        640
+      ],
+      "size": [
+        107,
+        96
+      ],
+      "mask": "flood_corners",
+      "note": ""
+    },
+    {
+      "file": "screen_caption_pixel_pet.png",
+      "box": [
+        721,
+        700,
+        865,
+        721
+      ],
+      "size": [
+        144,
+        21
+      ],
+      "mask": "flood",
+      "note": ""
+    },
+    {
+      "file": "control_dpad.png",
+      "box": [
+        457,
+        733,
+        598,
+        869
+      ],
+      "size": [
+        141,
+        136
+      ],
+      "mask": "dpad-shape",
+      "note": " fixed after visual QA"
+    },
+    {
+      "file": "control_start_button.png",
+      "box": [
+        622,
+        756,
+        729,
+        871
+      ],
+      "size": [
+        107,
+        115
+      ],
+      "mask": "rounded-fixed",
+      "note": " fixed after visual QA"
+    },
+    {
+      "file": "control_stop_button.png",
+      "box": [
+        748,
+        755,
+        854,
+        871
+      ],
+      "size": [
+        106,
+        116
+      ],
+      "mask": "rounded-fixed",
+      "note": " fixed after visual QA"
+    },
+    {
+      "file": "control_switch_button.png",
+      "box": [
+        873,
+        756,
+        1029,
+        871
+      ],
+      "size": [
+        156,
+        115
+      ],
+      "mask": "rounded-fixed",
+      "note": " fixed after visual QA"
+    },
+    {
+      "file": "control_settings_button.png",
+      "box": [
+        1051,
+        756,
+        1154,
+        869
+      ],
+      "size": [
+        103,
+        113
+      ],
+      "mask": "rounded-fixed",
+      "note": " fixed after visual QA"
+    },
+    {
+      "file": "bottom_page_heart.png",
+      "box": [
+        747,
+        904,
+        778,
+        929
+      ],
+      "size": [
+        31,
+        25
+      ],
+      "mask": "flood",
+      "note": ""
+    },
+    {
+      "file": "bottom_page_dots.png",
+      "box": [
+        801,
+        908,
+        829,
+        925
+      ],
+      "size": [
+        28,
+        17
+      ],
+      "mask": "flood",
+      "note": ""
+    },
+    {
+      "file": "panel_status.png",
+      "box": [
+        1184,
+        159,
+        1510,
+        294
+      ],
+      "size": [
+        326,
+        135
+      ],
+      "mask": "rounded",
+      "note": ""
+    },
+    {
+      "file": "panel_path.png",
+      "box": [
+        1184,
+        311,
+        1510,
+        422
+      ],
+      "size": [
+        326,
+        111
+      ],
+      "mask": "rounded",
+      "note": ""
+    },
+    {
+      "file": "panel_behavior_settings.png",
+      "box": [
+        1184,
+        438,
+        1510,
+        612
+      ],
+      "size": [
+        326,
+        174
+      ],
+      "mask": "rounded",
+      "note": ""
+    },
+    {
+      "file": "panel_recent_launches.png",
+      "box": [
+        1184,
+        630,
+        1510,
+        869
+      ],
+      "size": [
+        326,
+        239
+      ],
+      "mask": "rounded",
+      "note": ""
+    },
+    {
+      "file": "status_progress_bar.png",
+      "box": [
+        1208,
+        263,
+        1438,
+        279
+      ],
+      "size": [
+        230,
+        16
+      ],
+      "mask": "flood",
+      "note": ""
+    },
+    {
+      "file": "path_input_field.png",
+      "box": [
+        1199,
+        367,
+        1435,
+        408
+      ],
+      "size": [
+        236,
+        41
+      ],
+      "mask": "rounded",
+      "note": ""
+    },
+    {
+      "file": "path_browse_button.png",
+      "box": [
+        1445,
+        366,
+        1493,
+        409
+      ],
+      "size": [
+        48,
+        43
+      ],
+      "mask": "rounded-fixed",
+      "note": " fixed after visual QA"
+    },
+    {
+      "file": "toggle_on_startup.png",
+      "box": [
+        1415,
+        492,
+        1489,
+        524
+      ],
+      "size": [
+        74,
+        32
+      ],
+      "mask": "rounded-fixed",
+      "note": " fixed after visual QA"
+    },
+    {
+      "file": "toggle_on_hide.png",
+      "box": [
+        1415,
+        531,
+        1489,
+        563
+      ],
+      "size": [
+        74,
+        32
+      ],
+      "mask": "rounded-fixed",
+      "note": " fixed after visual QA"
+    },
+    {
+      "file": "toggle_off_auto_interact.png",
+      "box": [
+        1415,
+        571,
+        1489,
+        603
+      ],
+      "size": [
+        74,
+        32
+      ],
+      "mask": "rounded-fixed",
+      "note": " fixed after visual QA"
+    },
+    {
+      "file": "recent_row_luya.png",
+      "box": [
+        1196,
+        676,
+        1497,
+        740
+      ],
+      "size": [
+        301,
+        64
+      ],
+      "mask": "rounded",
+      "note": ""
+    },
+    {
+      "file": "recent_row_piko.png",
+      "box": [
+        1196,
+        741,
+        1497,
+        799
+      ],
+      "size": [
+        301,
+        58
+      ],
+      "mask": "rounded",
+      "note": ""
+    },
+    {
+      "file": "recent_row_mimo.png",
+      "box": [
+        1196,
+        801,
+        1497,
+        861
+      ],
+      "size": [
+        301,
+        60
+      ],
+      "mask": "rounded",
+      "note": ""
+    },
+    {
+      "file": "recent_thumb_luya.png",
+      "box": [
+        1204,
+        682,
+        1248,
+        730
+      ],
+      "size": [
+        44,
+        48
+      ],
+      "mask": "rounded",
+      "note": ""
+    },
+    {
+      "file": "recent_thumb_piko.png",
+      "box": [
+        1204,
+        744,
+        1248,
+        791
+      ],
+      "size": [
+        44,
+        47
+      ],
+      "mask": "rounded",
+      "note": ""
+    },
+    {
+      "file": "recent_thumb_mimo.png",
+      "box": [
+        1204,
+        806,
+        1248,
+        853
+      ],
+      "size": [
+        44,
+        47
+      ],
+      "mask": "rounded",
+      "note": ""
+    },
+    {
+      "file": "icon_status_heart.png",
+      "box": [
+        1206,
+        177,
+        1235,
+        202
+      ],
+      "size": [
+        29,
+        25
+      ],
+      "mask": "flood",
+      "note": ""
+    },
+    {
+      "file": "icon_folder.png",
+      "box": [
+        1203,
+        323,
+        1229,
+        347
+      ],
+      "size": [
+        26,
+        24
+      ],
+      "mask": "flood",
+      "note": ""
+    },
+    {
+      "file": "icon_gamepad.png",
+      "box": [
+        1203,
+        450,
+        1229,
+        475
+      ],
+      "size": [
+        26,
+        25
+      ],
+      "mask": "flood",
+      "note": ""
+    },
+    {
+      "file": "icon_clock.png",
+      "box": [
+        1205,
+        640,
+        1228,
+        664
+      ],
+      "size": [
+        23,
+        24
+      ],
+      "mask": "flood",
+      "note": ""
+    },
+    {
+      "file": "icon_screen_sun.png",
+      "box": [
+        997,
+        181,
+        1025,
+        207
+      ],
+      "size": [
+        28,
+        26
+      ],
+      "mask": "flood",
+      "note": ""
+    },
+    {
+      "file": "icon_screen_gear.png",
+      "box": [
+        1045,
+        183,
+        1068,
+        206
+      ],
+      "size": [
+        23,
+        23
+      ],
+      "mask": "flood",
+      "note": ""
+    },
+    {
+      "file": "icon_screen_grid.png",
+      "box": [
+        1091,
+        183,
+        1116,
+        208
+      ],
+      "size": [
+        25,
+        25
+      ],
+      "mask": "flood",
+      "note": ""
+    }
+  ]
+}
