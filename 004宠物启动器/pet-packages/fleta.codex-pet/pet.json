@@ -1,0 +1,7 @@
+{
+  "id": "fleta",
+  "displayName": "Fleta",
+  "description": "Fleta, a sweet silver-shaded Codex cat pet with stable silvercat-calm animations and large emerald-green eyes.",
+  "spritesheetPath": "spritesheet.webp",
+  "kind": "animal"
+}

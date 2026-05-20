@@ -1,0 +1,7 @@
+{
+  "id": "codex-purrprompt-v2",
+  "displayName": "Codex Purrprompt V2",
+  "description": "A happy fluffy gray-tabby Codex pet with a giant white ruff, kind yellow-green eyes, and playful terminal animations.",
+  "spritesheetPath": "spritesheet.webp",
+  "kind": "animal"
+}

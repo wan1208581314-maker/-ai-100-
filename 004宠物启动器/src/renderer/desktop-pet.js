@@ -2,6 +2,7 @@ const params = new URLSearchParams(window.location.search);
 const spriteUrl = params.get('sprite');
 const petName = params.get('name') || '桌宠';
 const spriteRows = Math.max(1, Number(params.get('rows') || 9));
+const invertRunActions = params.get('invertRun') === 'true';
 let autoInteractEnabled = params.get('autoInteract') === 'true';
 const sprite = document.querySelector('.desktop-pet__sprite');
 const bubble = document.querySelector('.desktop-pet__bubble');
@@ -40,6 +41,12 @@ let paused = false;
 let petScale = 1;
 let petOpacity = 1;
 let actionPreviewLockUntil = 0;
+
+function getRunAction(direction) {
+  if (direction === 'right') return invertRunActions ? 'running-left' : 'running-right';
+  if (direction === 'left') return invertRunActions ? 'running-right' : 'running-left';
+  return 'running';
+}
 
 function setAction(actionName, options = {}) {
   const action = actions[actionName] ?? actions.idle;
@@ -105,11 +112,11 @@ function hideMessageBubble() {
 async function setTravelAction(target) {
   const info = await window.launcher?.getDesktopPetTargetDirection?.({ target });
   if (info?.direction === 'left') {
-    setAction('running-left');
+    setAction(getRunAction('left'));
     return;
   }
   if (info?.direction === 'right') {
-    setAction('running-right');
+    setAction(getRunAction('right'));
     return;
   }
   setAction('running');
@@ -153,6 +160,9 @@ async function hideMenu() {
   root.classList.remove('is-menu-open');
   root.style.removeProperty('--pet-left');
   root.style.removeProperty('--pet-top');
+  if (wasOpen) {
+    await window.launcher?.revealDesktopPetMenu?.();
+  }
 }
 
 async function showMenu(event) {
@@ -175,6 +185,7 @@ async function showMenu(event) {
     menu.style.top = '12px';
   }
   menu.hidden = false;
+  await window.launcher?.revealDesktopPetMenu?.();
 }
 
 function applyPetSettings() {
@@ -235,7 +246,7 @@ sprite.addEventListener('pointermove', (event) => {
   dragState.totalX += Math.abs(dx);
   dragState.totalY += Math.abs(dy);
   if (dx !== 0 && Math.abs(dx) >= Math.abs(dy) * 0.35) {
-    const nextAction = dx > 0 ? 'running-right' : 'running-left';
+    const nextAction = getRunAction(dx > 0 ? 'right' : 'left');
     if (dragState.directionAction !== nextAction) {
       dragState.directionAction = nextAction;
       setAction(nextAction);

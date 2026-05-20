@@ -1,0 +1,7 @@
+{
+  "id": "ragdoll-cat-codex",
+  "displayName": "Ragdoll Cat Codex",
+  "description": "A fluffy ragdoll cat Codex pet with a full 8x9 spritesheet layout.",
+  "spritesheetPath": "spritesheet.webp",
+  "kind": "object"
+}

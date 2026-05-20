@@ -1,0 +1,7 @@
+{
+  "id": "neko-neko",
+  "displayName": "neko",
+  "description": "Neko is a sleepy gray cat companion who blinks, naps, and stretches between quiet workspace moments.",
+  "spritesheetPath": "spritesheet.webp",
+  "kind": "animal"
+}

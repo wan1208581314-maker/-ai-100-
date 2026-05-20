@@ -1,0 +1,7 @@
+{
+  "id": "oreo-cat",
+  "displayName": "Cat_oreo",
+  "description": "A soft hand-drawn silver-white chibi cat companion for calm study days.",
+  "spritesheetPath": "spritesheet.webp",
+  "kind": "animal"
+}

@@ -1,0 +1,7 @@
+{
+  "id": "norman",
+  "displayName": "Norman",
+  "description": "A loyal gray Norwegian Elkhound-style dog with upright ears, curled fluffy tail, black face mask, warm brown eyes, and a blue bone-pattern bandana.",
+  "spritesheetPath": "spritesheet.webp",
+  "kind": "animal"
+}

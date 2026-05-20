@@ -1,0 +1,7 @@
+{
+  "id": "eva-01-chibi",
+  "displayName": "EVA-01 Chibi",
+  "description": "A chibi Evangelion Unit-01 inspired companion with purple and green armor, expressive orange eyes, and a compact heroic mecha silhouette.",
+  "spritesheetPath": "spritesheet.webp",
+  "kind": "creature"
+}

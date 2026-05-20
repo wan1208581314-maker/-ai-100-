@@ -21,6 +21,7 @@ contextBridge.exposeInMainWorld('launcher', {
   travelDesktopPet: (options) => ipcRenderer.invoke('desktop-pet:travel', options),
   prepareDesktopPetMenu: (point) => ipcRenderer.invoke('desktop-pet:menu-open', point),
   closeDesktopPetMenu: () => ipcRenderer.invoke('desktop-pet:menu-close'),
+  revealDesktopPetMenu: () => ipcRenderer.invoke('desktop-pet:menu-ready'),
   runDesktopPetAction: (action) => ipcRenderer.invoke('desktop-pet:action', action),
   onBehaviorSettingsChanged: (callback) => {
     const handler = (_, settings) => callback(settings);

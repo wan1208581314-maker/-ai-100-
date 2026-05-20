@@ -5,7 +5,8 @@
   "main": "src/main.js",
   "scripts": {
     "start": "electron .",
-    "dev": "electron . --dev"
+    "dev": "electron . --dev",
+    "dist": "electron-builder --win portable"
   },
   "keywords": [
     "desktop-pet",
@@ -14,7 +15,39 @@
   ],
   "author": "Codex",
   "license": "MIT",
+  "build": {
+    "appId": "com.pixelpet.launcher",
+    "productName": "宠物启动器",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "src/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "pet-packages",
+        "to": "pet-packages",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
+    "win": {
+      "icon": "build/icon.ico",
+      "signAndEditExecutable": false,
+      "target": [
+        "portable"
+      ]
+    },
+    "portable": {
+      "artifactName": "宠物启动器-${version}.exe"
+    }
+  },
   "devDependencies": {
-    "electron": "^33.4.11"
+    "electron": "^33.4.11",
+    "electron-builder": "^26.8.1",
+    "png-to-ico": "^3.0.1"
   }
 }

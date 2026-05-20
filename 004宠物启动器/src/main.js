@@ -5,7 +5,11 @@ const { spawn, execFile } = require('child_process');
 const { pathToFileURL } = require('url');
 
 const PET_LIBRARY_ROOT = 'D:\\自媒体\\claude\\第四期';
+const BUNDLED_CODEX_PET_ROOT = app.isPackaged
+  ? path.join(process.resourcesPath, 'pet-packages')
+  : path.join(__dirname, '..', 'pet-packages');
 const DEFAULT_CODEX_PET_ROOTS = [
+  BUNDLED_CODEX_PET_ROOT,
   path.join(__dirname, '..', '..', '宠物包'),
   path.join(app.getPath('pictures'), '宠物包'),
   'C:\\Users\\DCKJ\\Pictures\\宠物包'
@@ -330,7 +334,7 @@ function discoverCodexPets(config) {
       runnable: true,
       running: runningPets.has(id),
       lastLaunchTime: config.lastLaunchTimes?.[id] ?? null,
-      runtimeConfig: {}
+      runtimeConfig: petJson.runtimeConfig || {}
     }];
   });
 }
@@ -484,6 +488,7 @@ function createDesktopPetWindow(pet) {
       name: pet.name,
       sprite: pet.spritesheetUrl,
       rows: String(pet.spriteAtlasRows ?? 9),
+      invertRun: String(Boolean(pet.runtimeConfig?.invertHorizontalRunActions)),
       autoInteract: String(Boolean(behaviorSettings.auto))
     }
   });
@@ -532,6 +537,7 @@ function preparePetMenuWindow(petWindow, point = {}) {
   };
   petWindow.__menuBounds = bounds;
   petWindow.__menuScaleChanged = false;
+  petWindow.setOpacity(0);
   petWindow.setBounds(next);
   const petLeftPx = Math.round(petCenterX - next.x);
   const petTopPx = Math.round(petCenterY - next.y);
@@ -553,6 +559,7 @@ function preparePetMenuWindow(petWindow, point = {}) {
 
 function restorePetMenuWindow(petWindow) {
   if (!petWindow || petWindow.isDestroyed()) return;
+  petWindow.setOpacity(0);
   if (petWindow.__menuBounds && !petWindow.__menuScaleChanged) {
     petWindow.setBounds(petWindow.__menuBounds);
   }
@@ -964,6 +971,12 @@ ipcMain.handle('desktop-pet:menu-open', (event, point) => {
 });
 ipcMain.handle('desktop-pet:menu-close', (event) => {
   restorePetMenuWindow(BrowserWindow.fromWebContents(event.sender));
+  return { ok: true };
+});
+ipcMain.handle('desktop-pet:menu-ready', (event) => {
+  const petWindow = BrowserWindow.fromWebContents(event.sender);
+  if (!petWindow || petWindow.isDestroyed()) return { ok: false };
+  petWindow.setOpacity(1);
   return { ok: true };
 });
 ipcMain.handle('desktop-pet:action', (event, action) => {

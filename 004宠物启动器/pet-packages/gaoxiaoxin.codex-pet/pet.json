@@ -1,0 +1,12 @@
+{
+  "id": "gaoxiaoxin",
+  "displayName": "高小欣",
+  "description": "戴白色发箍、蓝色格纹上衣的Q版像素小人桌宠。",
+  "spritesheetPath": "spritesheet.webp",
+  "kind": "human-chibi",
+  "source": "reference-photo-to-pixel-pet",
+  "runtimeConfig": {
+    "invertHorizontalRunActions": true
+  },
+  "notes": "第二版：修正打招呼全身、左右跑交替腿、waiting害羞低头脸红、running生气冒火跺脚；清理邻帧碎片。"
+}

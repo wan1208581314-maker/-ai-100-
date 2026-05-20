@@ -1,0 +1,7 @@
+{
+  "id": "coco",
+  "displayName": "coco",
+  "description": "A faithful Codex pet version of coco, a cream apricot chubby cat with round amber eyes, plush dense short fur, a broad round face, small rounded ears, a pink nose, thick white whiskers, and a fluffy curled tail.",
+  "spritesheetPath": "spritesheet.webp",
+  "kind": "animal"
+}
